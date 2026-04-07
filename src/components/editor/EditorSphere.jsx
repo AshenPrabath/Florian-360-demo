@@ -14,13 +14,17 @@ import { isHotspotInternal } from '../../data/locations';
  * @param {Function} props.onSelectHotspot - Callback when user selects an existing hotspot.
  * @param {string} props.selectedHotspotId - Currently selected hotspot ID.
  */
-function EditorSphere({ viewpoint, onAddHotspot, onSelectHotspot, selectedHotspotId }) {
+function EditorSphere({ viewpoint, timeMode, onAddHotspot, onSelectHotspot, selectedHotspotId }) {
   const groupRef = useRef();
   const [hoveredHotspot, setHoveredHotspot] = useState(null);
   
-  // Use previewUrl if available (from recent upload), otherwise use project path
-  const imageSource = viewpoint.previewUrl || viewpoint.image;
-  const isPending = viewpoint.image === 'pending_upload' && !viewpoint.previewUrl;
+  // Day vs Night selection
+  const isNight = timeMode === 'night';
+  const dayImage = viewpoint.previewUrl || viewpoint.image;
+  const nightImage = viewpoint.nightPreviewUrl || viewpoint.nightImage || dayImage; // Fallback to day if no night
+  
+  const imageSource = isNight ? nightImage : dayImage;
+  const isPending = (isNight ? viewpoint.nightImage : viewpoint.image) === 'pending_upload' && !imageSource;
 
   // Only load texture if we have a valid source
   const currentImageTexture = useTexture(isPending ? 'assets/images/placeholder.jpg' : imageSource);

@@ -1,19 +1,30 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useTexture, useVideoTexture } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import Hotspot from '../common/Hotspot';
 import { isHotspotInternal } from '../../data/locations';
 
-function PanoramaSphere({ viewpoint, onNavigate }) {
+function PanoramaSphere({ viewpoint, onNavigate, isNightMode }) {
   const [hoveredHotspot, setHoveredHotspot] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionVideoUrl, setTransitionVideoUrl] = useState(null);
   const [pendingViewpoint, setPendingViewpoint] = useState(null);
   const groupRef = useRef();
+  
+  // Transition logic for Day/Night
+  const opacityRef = useRef(0);
+  const [nightOpacity, setNightOpacity] = useState(0);
 
-  const currentImageTexture = useTexture(viewpoint.image);
+  // Load Main (Day) Texture
+  const dayTexture = useTexture(viewpoint.image);
+  
+  // Load Night Texture (if exists)
+  const nightTexture = useTexture(viewpoint.nightImage || viewpoint.image);
+  
   const pendingImageTexture = useTexture(pendingViewpoint?.image || viewpoint.image);
 
+  // Video transition texture
   const videoTexture = useVideoTexture(transitionVideoUrl || '', {
     unsuspend: 'loadstart',
     crossOrigin: 'Anonymous',
@@ -22,44 +33,30 @@ function PanoramaSphere({ viewpoint, onNavigate }) {
     start: isTransitioning,
   });
 
+  // Configure All Textures
   useEffect(() => {
-    if (currentImageTexture) {
-      currentImageTexture.wrapS = THREE.RepeatWrapping;
-      currentImageTexture.repeat.x = -1;
-      currentImageTexture.colorSpace = THREE.SRGBColorSpace;
-      currentImageTexture.needsUpdate = true;
+    const textures = [dayTexture, nightTexture, pendingImageTexture, videoTexture];
+    textures.forEach(tex => {
+      if (tex) {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.repeat.x = -1; // Flip for internal viewing
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.needsUpdate = true;
+      }
+    });
+    
+    // Video texture exception: repeat.x should be 1
+    if (videoTexture) videoTexture.repeat.x = 1;
+  }, [dayTexture, nightTexture, pendingImageTexture, videoTexture]);
+
+  // Handle smooth Day/Night fade
+  useFrame((state, delta) => {
+    const targetOpacity = isNightMode ? 1 : 0;
+    if (Math.abs(opacityRef.current - targetOpacity) > 0.001) {
+      opacityRef.current = THREE.MathUtils.lerp(opacityRef.current, targetOpacity, delta * 4);
+      setNightOpacity(opacityRef.current);
     }
-  }, [currentImageTexture]);
-
-  useEffect(() => {
-    if (pendingImageTexture && pendingViewpoint) {
-      pendingImageTexture.wrapS = THREE.RepeatWrapping;
-      pendingImageTexture.repeat.x = -1;
-      pendingImageTexture.colorSpace = THREE.SRGBColorSpace;
-      pendingImageTexture.needsUpdate = true;
-    }
-  }, [pendingImageTexture, pendingViewpoint]);
-
-  useEffect(() => {
-    if (videoTexture?.image && isTransitioning) {
-      const video = videoTexture.image;
-
-      const handleLoadedMetadata = () => {
-        video.currentTime = 0;
-      };
-
-      videoTexture.wrapS = THREE.RepeatWrapping;
-      videoTexture.repeat.x = 1;
-      videoTexture.colorSpace = THREE.SRGBColorSpace;
-      videoTexture.needsUpdate = true;
-
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-
-      return () => {
-        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      };
-    }
-  }, [videoTexture, isTransitioning]);
+  });
 
   useEffect(() => {
     if (groupRef.current && viewpoint.rotationOffset) {
@@ -71,112 +68,91 @@ function PanoramaSphere({ viewpoint, onNavigate }) {
   useEffect(() => {
     const handleTransition = (newViewpoint, transitionVideo) => {
       if (transitionVideo) {
-        const preloadVideo = document.createElement('video');
-        preloadVideo.src = transitionVideo;
-        preloadVideo.crossOrigin = 'anonymous';
-        preloadVideo.muted = true;
-        preloadVideo.playsInline = true;
-        preloadVideo.play().then(() => {
-          preloadVideo.pause();
-          preloadVideo.currentTime = 0;
-        });
-
         setPendingViewpoint(newViewpoint);
         setTransitionVideoUrl(transitionVideo);
         setIsTransitioning(true);
       }
     };
-
     window.handlePanoramaTransition = handleTransition;
   }, []);
 
   useEffect(() => {
     if (videoTexture?.image && isTransitioning) {
       const video = videoTexture.image;
-
+      
       const handleVideoEnd = () => {
         setIsTransitioning(false);
         setTransitionVideoUrl(null);
         setPendingViewpoint(null);
-        video.removeEventListener('ended', handleVideoEnd);
-        video.removeEventListener('error', handleVideoError);
+        onNavigate(pendingViewpoint.locationId, pendingViewpoint.id);
       };
 
-      const handleVideoError = (error) => {
-        console.error('🎬 Video error:', error);
+      const handleVideoError = (e) => {
+        console.error("🎬 Video Transition Error:", e);
         setIsTransitioning(false);
         setTransitionVideoUrl(null);
         setPendingViewpoint(null);
-        video.removeEventListener('ended', handleVideoEnd);
-        video.removeEventListener('error', handleVideoError);
       };
 
       video.addEventListener('ended', handleVideoEnd);
       video.addEventListener('error', handleVideoError);
-
+      
       return () => {
         video.removeEventListener('ended', handleVideoEnd);
         video.removeEventListener('error', handleVideoError);
       };
     }
-  }, [videoTexture, isTransitioning]);
-
-  const getActiveTexture = () => {
-    if (isTransitioning && videoTexture) {
-      return videoTexture;
-    }
-    return currentImageTexture;
-  };
-
-  const activeTexture = getActiveTexture();
+  }, [videoTexture, isTransitioning, pendingViewpoint, onNavigate]);
 
   return (
     <group ref={groupRef}>
-      <mesh>
-        <sphereGeometry args={[50, 64, 64]} />
-        {isTransitioning && videoTexture ? (
-          <shaderMaterial
-            args={[{
-              uniforms: {
-                uTexture: { value: videoTexture },
-              },
-              vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                  vUv = vec2(1.0 - uv.x, uv.y);
-                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-              `,
-              fragmentShader: `
-                uniform sampler2D uTexture;
-                varying vec2 vUv;
-                void main() {
-                  vec4 texColor = texture2D(uTexture, vUv);
-                  texColor.rgb = pow(texColor.rgb, vec3(1.1));
-                  gl_FragColor = texColor;
-                }
-              `,
-              side: THREE.BackSide,
-            }]}
-          />
-        ) : (
+      {/* Base Layer: Day Panorama */}
+      {/* Base Layer: Day Panorama */}
+      {!isTransitioning && (
+        <mesh raycast={null}>
+          <sphereGeometry args={[50, 64, 64]} />
           <meshBasicMaterial 
-            map={activeTexture} 
+            map={dayTexture} 
             side={THREE.BackSide} 
           />
-        )}
-      </mesh>
+        </mesh>
+      )}
 
+      {/* Overlay Layer: Night Panorama (Fades in) */}
+      {!isTransitioning && viewpoint.nightImage && (
+        <mesh raycast={null}>
+          <sphereGeometry args={[49.8, 64, 64]} />
+          <meshBasicMaterial 
+            map={nightTexture} 
+            side={THREE.BackSide} 
+            transparent={true}
+            opacity={nightOpacity}
+          />
+        </mesh>
+      )}
+
+      {/* Transition Video Layer */}
+      {isTransitioning && (
+        <mesh raycast={null}>
+          <sphereGeometry args={[50, 64, 64]} />
+          <meshBasicMaterial 
+            map={videoTexture} 
+            side={THREE.BackSide} 
+          />
+        </mesh>
+      )}
+
+      {/* Hotspots */}
       {!isTransitioning && viewpoint.hotspots.map((hotspot) => (
         <Hotspot
           key={hotspot.id}
           position={hotspot.panoramaPosition}
           label={hotspot.label}
-          isHovered={hoveredHotspot === hotspot.id}
+          isInternalNavigation={isHotspotInternal(hotspot, viewpoint.id)}
+          onClick={() => onNavigate(hotspot.target, hotspot.targetViewpoint)}
           onHover={() => setHoveredHotspot(hotspot.id)}
           onUnhover={() => setHoveredHotspot(null)}
-          onClick={() => onNavigate(hotspot.target, hotspot.targetViewpoint)}
-          isInternalNavigation={isHotspotInternal(hotspot, viewpoint.id)}
+          isHovered={hoveredHotspot === hotspot.id}
         />
       ))}
     </group>

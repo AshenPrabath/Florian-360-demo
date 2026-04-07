@@ -47,7 +47,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/1_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/c6ced6eb-84e5-4570-95b8-783896b8c147"
       },
       {
         "id": "living_door",
@@ -106,7 +108,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/2_Night.png",
+        "nightPreviewUrl": "blob:http://localhost:3000/35684b94-ea92-4510-91b4-507ee69e1c6f"
       }
     ],
     "minimap3DPosition": {
@@ -168,7 +172,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/3_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/1ec2b8b5-a1b1-42ce-a6e6-f655f2446c3b"
       },
       {
         "id": "corridor_1775559155747",
@@ -236,7 +242,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/4_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/1fe0f0ec-ffe2-4d0e-bbee-84b9072492c9"
       }
     ],
     "minimap3DPosition": {
@@ -298,7 +306,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/5_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/4a1283f3-fa77-4ab8-9131-47b63115b510"
       },
       {
         "id": "lobby_1775560178725",
@@ -408,7 +418,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/7_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/9d112525-3752-4bc4-ba5f-151b8d2d7193"
       },
       {
         "id": "outside_1775560232646",
@@ -436,7 +448,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/8_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/54b00de9-53a0-427b-867a-1e41429435e0"
       }
     ],
     "minimap3DPosition": {
@@ -600,7 +614,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/11_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/16beca5c-31ba-439a-9cff-c7b18466f8c3"
       },
       {
         "id": "1stfloorcorridor_1775561097413",
@@ -688,7 +704,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/12_Day.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/e3a152a4-2f62-4554-b24d-b7f121ade233"
       },
       {
         "id": "1stfloorcorridor_1775561129126",
@@ -796,7 +814,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/14_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/97684605-3f4d-4c2f-a0a5-961229450add"
       },
       {
         "id": "1stfloorcorridor_1775561168030",
@@ -864,7 +884,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/13_Night.png",
+        "nightPreviewUrl": "blob:http://localhost:3000/02a40309-c291-482c-96d4-24d9b04af4e2"
       },
       {
         "id": "1stfloorcorridor_1775561193086",
@@ -952,7 +974,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/15_Night.jpg",
+        "nightPreviewUrl": "blob:http://localhost:3000/65aae985-aeb1-4a47-a153-b3bd25c3f466"
       }
     ],
     "minimap3DPosition": {
@@ -1034,7 +1058,9 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ]
+        ],
+        "nightImage": "assets/images/16_Night.png",
+        "nightPreviewUrl": "blob:http://localhost:3000/9a15f9c3-86b3-4be5-b8b1-c0b52aa8bd11"
       },
       {
         "id": "2ndfloorroom_1775562114622",

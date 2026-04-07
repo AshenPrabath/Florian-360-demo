@@ -5,7 +5,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import EditorSphere from '../components/editor/EditorSphere';
 import { LOCATIONS } from '../data/locations';
-import { Save, Plus, Trash2, Home, Download, Copy, Image as ImageIcon, Crosshair, ChevronRight, ChevronDown, Folder, Camera, MapPin, Check } from 'lucide-react';
+import { Save, Plus, Trash2, Home, Download, Copy, Image as ImageIcon, Crosshair, ChevronRight, ChevronDown, Folder, Camera, MapPin, Check, Sun, Moon } from 'lucide-react';
 
 import FileDropzone from '../components/editor/FileDropzone';
 
@@ -16,6 +16,7 @@ const EditorPage = () => {
   const [activeViewpointId, setActiveViewpointId] = useState(LOCATIONS[Object.keys(LOCATIONS)[0]].viewpoints[0].id);
   const [selectedHotspotId, setSelectedHotspotId] = useState(null);
   const [editMode, setEditMode] = useState('view'); // 'view' or 'add'
+  const [timeMode, setTimeMode] = useState('day'); // 'day' or 'night'
   const [showExportModal, setShowExportModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -144,15 +145,21 @@ const EditorPage = () => {
     setTourData(updatedTourData);
   };
 
-  const handleImageUpload = (file) => {
+  const handleImageUpload = (file, type = 'day') => {
     const previewUrl = URL.createObjectURL(file);
-    // Path conversion logic: assume project assets/images structure
     const projectPath = `assets/images/${file.name}`;
     
-    handleUpdateViewpoint({ 
-      image: projectPath,
-      previewUrl: previewUrl // Used by EditorSphere to show instant change
-    });
+    if (type === 'day') {
+      handleUpdateViewpoint({ 
+        image: projectPath,
+        previewUrl: previewUrl 
+      });
+    } else {
+      handleUpdateViewpoint({ 
+        nightImage: projectPath,
+        nightPreviewUrl: previewUrl 
+      });
+    }
   };
 
   // Existing deletion handlers omitted for brevity in this block, preserving them in actual file
@@ -386,6 +393,7 @@ const EditorPage = () => {
             {activeViewpoint ? (
               <EditorSphere 
                 viewpoint={activeViewpoint} 
+                timeMode={timeMode}
                 onAddHotspot={handleAddHotspot}
                 onSelectHotspot={setSelectedHotspotId}
                 selectedHotspotId={selectedHotspotId}
@@ -519,12 +527,48 @@ const EditorPage = () => {
                   />
                </div>
 
-               <div>
-                  <label className="text-[10px] uppercase text-white/40 tracking-wider mb-1.5 block">360 Panorama</label>
-                  <FileDropzone 
-                    onFileSelect={handleImageUpload} 
-                    currentFile={activeViewpoint.image === 'pending_upload' ? null : activeViewpoint.image} 
-                  />
+               <div className="pt-2 border-t border-white/5">
+                  <label className="text-[10px] uppercase text-white/40 tracking-wider mb-2.5 block">Preview Time Mode</label>
+                  <div className="flex bg-neutral-800 p-1 rounded-lg">
+                    <button 
+                      onClick={() => setTimeMode('day')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                        timeMode === 'day' ? 'bg-[#DCC5B7] text-black shadow-lg' : 'text-white/40 hover:text-white'
+                      }`}
+                    >
+                      <Sun size={12} /> DAY
+                    </button>
+                    <button 
+                      onClick={() => setTimeMode('night')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                        timeMode === 'night' ? 'bg-[#DCC5B7] text-black shadow-lg' : 'text-white/40 hover:text-white'
+                      }`}
+                    >
+                      <Moon size={12} /> NIGHT
+                    </button>
+                  </div>
+               </div>
+
+               <div className="space-y-4 pt-2">
+                  <div>
+                    <label className="text-[10px] uppercase text-white/40 tracking-wider mb-1.5 block flex items-center gap-2">
+                      <Sun size={10} className="text-[#DCC5B7]" /> Day Panorama
+                    </label>
+                    <FileDropzone 
+                      onFileSelect={(file) => handleImageUpload(file, 'day')} 
+                      currentFile={activeViewpoint.image === 'pending_upload' ? null : activeViewpoint.image} 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase text-white/40 tracking-wider mb-1.5 block flex items-center gap-2">
+                      <Moon size={10} className="text-[#DCC5B7]" /> Night Panorama
+                    </label>
+                    <FileDropzone 
+                      onFileSelect={(file) => handleImageUpload(file, 'night')} 
+                      currentFile={activeViewpoint.nightImage} 
+                    />
+                  </div>
                </div>
             </div>
 

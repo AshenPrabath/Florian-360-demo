@@ -29,6 +29,7 @@ function TourPage() {
   const [isMinimapVisible, setIsMinimapVisible] = useState(false);
   const [isAutoRotating, setIsAutoRotating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNightMode, setIsNightMode] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(75); // Default FOV
   const [isZooming, setIsZooming] = useState(false);
   const controlsRef = useRef();
@@ -50,9 +51,7 @@ function TourPage() {
     currentLocation.viewpoints.find((v) => v.id === currentViewpointId) ||
     currentLocation.viewpoints[0];
 
-  const navigateToViewpoint = (locationId, viewpointId) => {
-    console.log("🎯 Navigate requested:", locationId, viewpointId);
-
+  const navigateToViewpoint = (locationId, viewpointId, skipVideo = false) => {
     if (
       LOCATIONS[locationId] &&
       (locationId !== currentLocationId || viewpointId !== currentViewpointId)
@@ -67,27 +66,26 @@ function TourPage() {
       );
 
       const transitionVideo = hotspot?.transitionVideo;
-      console.log("🎯 Found transition video:", transitionVideo);
 
-      if (transitionVideo && window.handlePanoramaTransition) {
-        console.log("🎯 Starting video transition");
-
+      // Only attempt video transition if not skipped and video exists
+      if (!skipVideo && transitionVideo && window.handlePanoramaTransition) {
         const newViewpoint = LOCATIONS[locationId].viewpoints.find(
           (v) => v.id === viewpointId
         );
-        window.handlePanoramaTransition(newViewpoint, transitionVideo);
+        window.handlePanoramaTransition(
+          { ...newViewpoint, locationId: locationId }, 
+          transitionVideo
+        );
+        return; // Don't update state yet, PanoramaSphere will call us back
+      }
 
+      // Fallback: Simple fade transition
+      setIsTransitioning(true);
+      setTimeout(() => {
         setCurrentLocationId(locationId);
         setCurrentViewpointId(viewpointId);
-      } else {
-        console.log("🎯 No video transition, using fade transition");
-        setIsTransitioning(true);
-        setTimeout(() => {
-          setCurrentLocationId(locationId);
-          setCurrentViewpointId(viewpointId);
-          setIsTransitioning(false);
-        }, 300);
-      }
+        setIsTransitioning(false);
+      }, 300);
     }
   };
 
@@ -245,6 +243,7 @@ function TourPage() {
           <PanoramaSphere
             viewpoint={currentViewpoint}
             onNavigate={navigateToViewpoint}
+            isNightMode={isNightMode}
           />
           <OrbitControls
             ref={controlsRef}
@@ -416,6 +415,9 @@ function TourPage() {
                     ) <
                     currentLocation.viewpoints.length - 1
                   }
+                  isNightMode={isNightMode}
+                  onToggleNightMode={() => setIsNightMode(!isNightMode)}
+                  hasNight={!!currentViewpoint.nightImage}
                 />
               </div>
             </div>
@@ -562,6 +564,9 @@ function TourPage() {
                     ) <
                     currentLocation.viewpoints.length - 1
                   }
+                  isNightMode={isNightMode}
+                  onToggleNightMode={() => setIsNightMode(!isNightMode)}
+                  hasNight={!!currentViewpoint.nightImage}
                 />
               </div>
 
@@ -705,6 +710,9 @@ function TourPage() {
                     ) <
                     currentLocation.viewpoints.length - 1
                   }
+                  isNightMode={isNightMode}
+                  onToggleNightMode={() => setIsNightMode(!isNightMode)}
+                  hasNight={!!currentViewpoint.nightImage}
                 />
               </div>
 
@@ -828,6 +836,9 @@ function TourPage() {
                       ) <
                       currentLocation.viewpoints.length - 1
                     }
+                    isNightMode={isNightMode}
+                    onToggleNightMode={() => setIsNightMode(!isNightMode)}
+                    hasNight={!!currentViewpoint.nightImage}
                   />
                 </div>
 

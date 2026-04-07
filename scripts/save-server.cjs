@@ -27,13 +27,18 @@ const server = http.createServer((req, res) => {
       try {
         let data = JSON.parse(body);
 
-        // Sanitize data: Remove temporary 'previewUrl' before saving to disk
+        // Sanitize data: Remove any temporary preview URLs (blob links) before saving to disk
         const sanitizeData = (obj) => {
           if (Array.isArray(obj)) {
             obj.forEach(sanitizeData);
           } else if (obj && typeof obj === 'object') {
-            delete obj.previewUrl;
-            Object.values(obj).forEach(sanitizeData);
+            Object.keys(obj).forEach(key => {
+              if (key.toLowerCase().endsWith('previewurl')) {
+                delete obj[key];
+              } else {
+                sanitizeData(obj[key]);
+              }
+            });
           }
         };
         sanitizeData(data);

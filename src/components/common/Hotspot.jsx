@@ -74,16 +74,16 @@ function Hotspot({ position, onClick, label, isHovered, onHover, onUnhover, isIn
     <group position={position}>
   {/* ✅ Transparent interactive area for full hitbox */}
   <mesh
-  onClick={onClick}
-  onPointerOver={onHover}
-  onPointerOut={onUnhover}
-  rotation={[Math.PI / 2, 0, 0]}
-  position={[0, 0.001, 0]} // tiny Z offset to avoid depth fight
-  renderOrder={1}          // make sure it renders first
->
-  <circleGeometry args={[0.4, 32]} />
-  <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
-</mesh>
+    onClick={onClick}
+    onPointerOver={onHover}
+    onPointerOut={onUnhover}
+    rotation={[Math.PI / 2, 0, 0]}
+    position={[0, 0.001, 0]} // tiny Z offset to avoid depth fight
+    renderOrder={10}          // High priority for raycasting
+  >
+    <circleGeometry args={[0.8, 32]} />
+    <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
+  </mesh>
 
 
   {/* Pulse ring for ambient animation */}
