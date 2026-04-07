@@ -775,6 +775,26 @@ export const LOCATIONS = {
               "x": 0,
               "y": 0
             }
+          },
+          {
+            "id": "hotspot_1775563295187",
+            "target": "1stfloorbedroom",
+            "targetViewpoint": "1stfloorbedroom_1775563115712",
+            "label": "New Hotspot",
+            "panoramaPosition": [
+              -7.354859944398075,
+              -5.102243615256784,
+              -4.457930606106398
+            ],
+            "minimap3DPosition": [
+              0,
+              0,
+              0
+            ],
+            "minimap2DPosition": {
+              "x": 0,
+              "y": 0
+            }
           }
         ]
       },
@@ -1107,6 +1127,144 @@ export const LOCATIONS = {
               -0.726717258662337,
               -2.8144670260927604,
               -9.568210772396208
+            ],
+            "minimap3DPosition": [
+              0,
+              0,
+              0
+            ],
+            "minimap2DPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ],
+    "minimap3DPosition": {
+      "x": 0,
+      "z": 0
+    },
+    "minimap2DPosition": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "1stfloorbedroom": {
+    "id": "1stfloorbedroom",
+    "name": "1st Floor Bedroom",
+    "viewpoints": [
+      {
+        "id": "1stfloorbedroom_1775563115712",
+        "name": "Entrance",
+        "image": "assets/images/IMG_20260401_211240_00_041_exported.jpg",
+        "rotationOffset": 0,
+        "hotspots": [
+          {
+            "id": "hotspot_1775563181568",
+            "target": "1stfloorcorridor",
+            "targetViewpoint": "1stfloorcorridor_1775561168030",
+            "label": "New Hotspot",
+            "panoramaPosition": [
+              -9.052579023580469,
+              -3.841149627324384,
+              -1.8155942725005119
+            ],
+            "minimap3DPosition": [
+              0,
+              0,
+              0
+            ],
+            "minimap2DPosition": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "hotspot_1775563212946",
+            "target": "1stfloorbedroom",
+            "targetViewpoint": "1stfloorbedroom_1775563130776",
+            "label": "New Hotspot",
+            "panoramaPosition": [
+              -2.0425685962934876,
+              -4.954125469803929,
+              8.443018083533616
+            ],
+            "minimap3DPosition": [
+              0,
+              0,
+              0
+            ],
+            "minimap2DPosition": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "id": "hotspot_1775563221121",
+            "target": "1stfloorbedroom",
+            "targetViewpoint": "1stfloorbedroom_1775563144992",
+            "label": "New Hotspot",
+            "panoramaPosition": [
+              9.312372896321953,
+              -3.569359967299046,
+              -0.734425260793238
+            ],
+            "minimap3DPosition": [
+              0,
+              0,
+              0
+            ],
+            "minimap2DPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "1stfloorbedroom_1775563130776",
+        "name": "Bathroom",
+        "image": "assets/images/IMG_20260401_211217_00_040_exported.jpg",
+        "rotationOffset": 0,
+        "hotspots": [
+          {
+            "id": "hotspot_1775563230825",
+            "target": "1stfloorbedroom",
+            "targetViewpoint": "1stfloorbedroom_1775563115712",
+            "label": "New Hotspot",
+            "panoramaPosition": [
+              4.362205241492337,
+              -5.910867726606503,
+              -6.784748200903144
+            ],
+            "minimap3DPosition": [
+              0,
+              0,
+              0
+            ],
+            "minimap2DPosition": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "1stfloorbedroom_1775563144992",
+        "name": "Point B",
+        "image": "assets/images/IMG_20260401_211302_00_042_exported.jpg",
+        "rotationOffset": 0,
+        "hotspots": [
+          {
+            "id": "hotspot_1775563242593",
+            "target": "1stfloorbedroom",
+            "targetViewpoint": "1stfloorbedroom_1775563115712",
+            "label": "New Hotspot",
+            "panoramaPosition": [
+              -9.584116787347133,
+              -2.8426584320062926,
+              0.2529791403147718
             ],
             "minimap3DPosition": [
               0,
