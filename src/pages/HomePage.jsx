@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 function HomePage() {
   const navigate = useNavigate();
-  const villaBg = "/assets/images/villa-bg.png";
+  const villaBg = "/assets/images/7_Day.jpg";
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black select-none -mt-20">
@@ -49,14 +49,6 @@ function HomePage() {
               <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
             </button>
             
-            <button
-              className="px-12 py-5 rounded-full border border-white/30 text-white hover:bg-white/10 transition-all duration-300 text-lg uppercase tracking-widest backdrop-blur-sm"
-              onClick={() => {
-                // Future: link to details
-              }}
-            >
-              Learn More
-            </button>
           </div>
         </div>
       </div>
@@ -67,9 +59,9 @@ function HomePage() {
       </div>
       
       <div className="absolute bottom-12 left-12 z-20 flex gap-4 text-white/50 text-xs uppercase tracking-widest font-light">
-        <span>Dubai, UAE</span>
+        <span>Talpe, Sri Lanka</span>
         <span className="opacity-30">|</span>
-        <span>Est. 2026</span>
+        <span>Est. 2025</span>
       </div>
     </div>
   );

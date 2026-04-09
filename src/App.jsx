@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import TourPage from "./pages/TourPage";
@@ -12,7 +12,7 @@ import EditorPage from "./pages/EditorPage";
  * It manages the current page view using React Router.
  */
 function App() {
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [assetsLoaded, setAssetsLoaded] = React.useState(false);
 
   const handleAssetsLoaded = () => {
     setAssetsLoaded(true);
@@ -33,12 +33,11 @@ function App() {
 
                 {/* Center logo */}
                 <div className="w-1/3 flex justify-center">
-                  <Link to="/">
-                    <img
-                      src="assets/images/bnw-logo.png"
-                      alt="Florain Otium Talpe Logo"
-                      className="h-10 object-contain"
-                      style={{ maxWidth: 160 }}
+                  <Link to="/" className="flex flex-col items-center">
+                    <img 
+                      src="/images/logo.png" 
+                      alt="Florain Otium Logo" 
+                      className="h-12 w-auto object-contain"
                     />
                   </Link>
                 </div>
@@ -67,4 +66,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;

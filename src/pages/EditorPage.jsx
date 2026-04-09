@@ -5,7 +5,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import EditorSphere from '../components/editor/EditorSphere';
 import { LOCATIONS } from '../data/locations';
-import { Save, Plus, Trash2, Home, Download, Copy, Image as ImageIcon, Crosshair, ChevronRight, ChevronDown, Folder, Camera, MapPin, Check, Sun, Moon } from 'lucide-react';
+import { Save, Plus, Trash2, Home, Download, Copy, Image as ImageIcon, Crosshair, ChevronRight, ChevronDown, Folder, Camera, MapPin, Check, Sun, Compass } from 'lucide-react';
 
 import FileDropzone from '../components/editor/FileDropzone';
 
@@ -15,11 +15,13 @@ const EditorPage = () => {
   const [activeLocationId, setActiveLocationId] = useState(Object.keys(LOCATIONS)[0]);
   const [activeViewpointId, setActiveViewpointId] = useState(LOCATIONS[Object.keys(LOCATIONS)[0]].viewpoints[0].id);
   const [selectedHotspotId, setSelectedHotspotId] = useState(null);
-  const [editMode, setEditMode] = useState('view'); // 'view' or 'add'
-  const [timeMode, setTimeMode] = useState('day'); // 'day' or 'night'
+  const [editMode, setEditMode] = useState('view'); // 'view', 'add', or 'rotate'
   const [showExportModal, setShowExportModal] = useState(false);
+  const [isRotateLocked, setIsRotateLocked] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  const orbitControlsRef = useRef();
 
   // --- Derived Data ---
   const activeLocation = tourData[activeLocationId];
@@ -145,21 +147,13 @@ const EditorPage = () => {
     setTourData(updatedTourData);
   };
 
-  const handleImageUpload = (file, type = 'day') => {
+  const handleImageUpload = (file) => {
     const previewUrl = URL.createObjectURL(file);
     const projectPath = `assets/images/${file.name}`;
-    
-    if (type === 'day') {
-      handleUpdateViewpoint({ 
-        image: projectPath,
-        previewUrl: previewUrl 
-      });
-    } else {
-      handleUpdateViewpoint({ 
-        nightImage: projectPath,
-        nightPreviewUrl: previewUrl 
-      });
-    }
+    handleUpdateViewpoint({ 
+      image: projectPath,
+      previewUrl: previewUrl 
+    });
   };
 
   // Existing deletion handlers omitted for brevity in this block, preserving them in actual file
@@ -369,6 +363,16 @@ const EditorPage = () => {
            </button>
            <div className="w-px h-4 bg-white/20 mx-1" />
            <button
+             onClick={() => setEditMode('rotate')}
+             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${
+               editMode === 'rotate' ? 'bg-[#DCC5B7] text-black shadow-lg scale-105' : 'hover:bg-white/10'
+             }`}
+           >
+             <Compass size={14} />
+             Set Orientation
+           </button>
+           <div className="w-px h-4 bg-white/20 mx-1" />
+           <button
              onClick={() => setEditMode('add')}
              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${
                editMode === 'add' ? 'bg-[#DCC5B7] text-black' : 'hover:bg-white/10'
@@ -385,6 +389,12 @@ const EditorPage = () => {
           </div>
         )}
 
+        {editMode === 'rotate' && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 px-4 py-2 bg-emerald-600/90 text-white text-[10px] uppercase tracking-widest font-bold rounded animate-pulse">
+            Panning is locked to horizontal. Set the 'North' orientation for this image.
+          </div>
+        )}
+
         <Canvas shadows className="cursor-crosshair">
           <Suspense fallback={null}>
             <PerspectiveCamera makeDefault position={[0, 0, 0.1]} fov={75} />
@@ -393,7 +403,6 @@ const EditorPage = () => {
             {activeViewpoint ? (
               <EditorSphere 
                 viewpoint={activeViewpoint} 
-                timeMode={timeMode}
                 onAddHotspot={handleAddHotspot}
                 onSelectHotspot={setSelectedHotspotId}
                 selectedHotspotId={selectedHotspotId}
@@ -403,11 +412,14 @@ const EditorPage = () => {
             )}
 
             <OrbitControls 
+              ref={orbitControlsRef}
               enablePan={false}
               enableZoom={true}
               zoomSpeed={0.5}
               rotateSpeed={-0.5}
               reverseOrbit={true}
+              minPolarAngle={editMode === 'rotate' ? Math.PI / 2 : 0}
+              maxPolarAngle={editMode === 'rotate' ? Math.PI / 2 : Math.PI}
             />
           </Suspense>
         </Canvas>
@@ -527,29 +539,40 @@ const EditorPage = () => {
                   />
                </div>
 
-               <div className="pt-2 border-t border-white/5">
-                  <label className="text-[10px] uppercase text-white/40 tracking-wider mb-2.5 block">Preview Time Mode</label>
-                  <div className="flex bg-neutral-800 p-1 rounded-lg">
-                    <button 
-                      onClick={() => setTimeMode('day')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-bold transition-all ${
-                        timeMode === 'day' ? 'bg-[#DCC5B7] text-black shadow-lg' : 'text-white/40 hover:text-white'
-                      }`}
-                    >
-                      <Sun size={12} /> DAY
-                    </button>
-                    <button 
-                      onClick={() => setTimeMode('night')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-[10px] font-bold transition-all ${
-                        timeMode === 'night' ? 'bg-[#DCC5B7] text-black shadow-lg' : 'text-white/40 hover:text-white'
-                      }`}
-                    >
-                      <Moon size={12} /> NIGHT
-                    </button>
-                  </div>
-               </div>
 
                <div className="space-y-4 pt-2">
+                  <div className="p-3 bg-neutral-800 rounded-lg border border-white/5 space-y-3">
+                     <div className="flex items-center justify-between">
+                        <label className="text-[10px] uppercase text-white/40 tracking-wider flex items-center gap-2">
+                           Horizontal Pitch Offset
+                        </label>
+                        <span className="text-[10px] font-mono text-[#DCC5B7] bg-white/5 px-2 py-0.5 rounded">{activeViewpoint.rotationOffset || 0}°</span>
+                     </div>
+                     <input 
+                        type="range"
+                        min="-180"
+                        max="180"
+                        step="1"
+                        value={activeViewpoint.rotationOffset || 0}
+                        onChange={(e) => handleUpdateViewpoint({ rotationOffset: parseInt(e.target.value) })}
+                        className="w-full h-1.5 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-[#DCC5B7]"
+                     />
+                     <button 
+                        onClick={() => {
+                           if (orbitControlsRef.current) {
+                              // azimuthalAngle is in radians. Correct for the negative rotateSpeed
+                              // If current angle is theta, we want to shift pano content by theta
+                              const currentAzimuth = orbitControlsRef.current.getAzimuthalAngle();
+                              const degrees = Math.round((currentAzimuth * 180) / Math.PI);
+                              handleUpdateViewpoint({ rotationOffset: -degrees });
+                           }
+                        }}
+                        className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-white/50 hover:text-white transition-all border border-white/5 flex items-center justify-center gap-2"
+                     >
+                        <Compass size={12} /> USE CURRENT VIEW AS HOME
+                     </button>
+                  </div>
+
                   <div>
                     <label className="text-[10px] uppercase text-white/40 tracking-wider mb-1.5 block flex items-center gap-2">
                       <Sun size={10} className="text-[#DCC5B7]" /> Day Panorama
@@ -560,15 +583,6 @@ const EditorPage = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="text-[10px] uppercase text-white/40 tracking-wider mb-1.5 block flex items-center gap-2">
-                      <Moon size={10} className="text-[#DCC5B7]" /> Night Panorama
-                    </label>
-                    <FileDropzone 
-                      onFileSelect={(file) => handleImageUpload(file, 'night')} 
-                      currentFile={activeViewpoint.nightImage} 
-                    />
-                  </div>
                </div>
             </div>
 

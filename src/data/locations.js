@@ -15,7 +15,7 @@ export const LOCATIONS = {
         "name": "Entrance View",
         "description": "View from the entrance of the living room.",
         "image": "assets/images/1_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 100,
         "directionOffset": 90,
         "minimap3DPosition": [
           -2,
@@ -47,16 +47,14 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/1_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/c6ced6eb-84e5-4570-95b8-783896b8c147"
+        ]
       },
       {
         "id": "living_door",
         "name": "Door View",
         "description": "View from the Door area in the living room.",
         "image": "assets/images/2_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 88,
         "directionOffset": 90,
         "minimap3DPosition": [
           0,
@@ -108,9 +106,7 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/2_Night.png",
-        "nightPreviewUrl": "blob:http://localhost:3000/35684b94-ea92-4510-91b4-507ee69e1c6f"
+        ]
       }
     ],
     "minimap3DPosition": {
@@ -130,7 +126,7 @@ export const LOCATIONS = {
         "id": "corridor_1775559095459",
         "name": "Point A",
         "image": "assets/images/3_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 82,
         "hotspots": [
           {
             "id": "hotspot_1775559120875",
@@ -172,15 +168,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/3_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/1ec2b8b5-a1b1-42ce-a6e6-f655f2446c3b"
+        ]
       },
       {
         "id": "corridor_1775559155747",
         "name": "Point B",
         "image": "assets/images/4_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 80,
         "hotspots": [
           {
             "id": "hotspot_1775560105588",
@@ -242,9 +236,7 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/4_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/1fe0f0ec-ffe2-4d0e-bbee-84b9072492c9"
+        ]
       }
     ],
     "minimap3DPosition": {
@@ -264,7 +256,7 @@ export const LOCATIONS = {
         "id": "lobby_1775559302454",
         "name": "Lobby A",
         "image": "assets/images/5_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 77,
         "hotspots": [
           {
             "id": "hotspot_1775559335062",
@@ -306,15 +298,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/5_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/4a1283f3-fa77-4ab8-9131-47b63115b510"
+        ]
       },
       {
         "id": "lobby_1775560178725",
         "name": "Lobby B",
         "image": "assets/images/6_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 77,
         "hotspots": [
           {
             "id": "hotspot_1775560335535",
@@ -376,7 +366,7 @@ export const LOCATIONS = {
         "id": "outside_1775560221494",
         "name": "Outside A",
         "image": "assets/images/7_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 78,
         "hotspots": [
           {
             "id": "hotspot_1775560259135",
@@ -418,15 +408,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/7_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/9d112525-3752-4bc4-ba5f-151b8d2d7193"
+        ]
       },
       {
         "id": "outside_1775560232646",
         "name": "Outside B",
         "image": "assets/images/8_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 78,
         "hotspots": [
           {
             "id": "hotspot_1775560242830",
@@ -448,9 +436,7 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/8_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/54b00de9-53a0-427b-867a-1e41429435e0"
+        ]
       }
     ],
     "minimap3DPosition": {
@@ -470,7 +456,7 @@ export const LOCATIONS = {
         "id": "stairs_1775560581084",
         "name": "Stairs",
         "image": "assets/images/9_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 96,
         "hotspots": [
           {
             "id": "hotspot_1775560599060",
@@ -532,7 +518,7 @@ export const LOCATIONS = {
         "id": "1stfloorcorridor_1775560755655",
         "name": "Point A",
         "image": "assets/images/11_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 88,
         "hotspots": [
           {
             "id": "hotspot_1775561053140",
@@ -614,15 +600,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/11_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/16beca5c-31ba-439a-9cff-c7b18466f8c3"
+        ]
       },
       {
         "id": "1stfloorcorridor_1775561097413",
         "name": "Point B",
         "image": "assets/images/12_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 96,
         "hotspots": [
           {
             "id": "hotspot_1775561425138",
@@ -704,15 +688,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/12_Day.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/e3a152a4-2f62-4554-b24d-b7f121ade233"
+        ]
       },
       {
         "id": "1stfloorcorridor_1775561129126",
         "name": "1st Floor Lobby",
         "image": "assets/images/14_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": -54,
         "hotspots": [
           {
             "id": "hotspot_1775561451962",
@@ -814,15 +796,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/14_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/97684605-3f4d-4c2f-a0a5-961229450add"
+        ]
       },
       {
         "id": "1stfloorcorridor_1775561168030",
         "name": "1st Floor Lobby B",
         "image": "assets/images/13_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 61,
         "hotspots": [
           {
             "id": "hotspot_1775561482555",
@@ -884,15 +864,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/13_Night.png",
-        "nightPreviewUrl": "blob:http://localhost:3000/02a40309-c291-482c-96d4-24d9b04af4e2"
+        ]
       },
       {
         "id": "1stfloorcorridor_1775561193086",
         "name": "Point C",
         "image": "assets/images/15_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 49,
         "hotspots": [
           {
             "id": "hotspot_1775561621398",
@@ -974,9 +952,7 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/15_Night.jpg",
-        "nightPreviewUrl": "blob:http://localhost:3000/65aae985-aeb1-4a47-a153-b3bd25c3f466"
+        ]
       }
     ],
     "minimap3DPosition": {
@@ -996,7 +972,7 @@ export const LOCATIONS = {
         "id": "2ndfloorroom_1775562011685",
         "name": "Entrance",
         "image": "assets/images/16_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 75,
         "hotspots": [
           {
             "id": "hotspot_1775562274001",
@@ -1058,15 +1034,13 @@ export const LOCATIONS = {
               "y": 0
             }
           }
-        ],
-        "nightImage": "assets/images/16_Night.png",
-        "nightPreviewUrl": "blob:http://localhost:3000/9a15f9c3-86b3-4be5-b8b1-c0b52aa8bd11"
+        ]
       },
       {
         "id": "2ndfloorroom_1775562114622",
         "name": "living",
         "image": "assets/images/18_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 161,
         "hotspots": [
           {
             "id": "hotspot_1775562314394",
@@ -1114,7 +1088,7 @@ export const LOCATIONS = {
         "id": "2ndfloorroom_1775562153991",
         "name": "Balcony",
         "image": "assets/images/19_Day.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": 161,
         "hotspots": [
           {
             "id": "hotspot_1775562329362",
@@ -1184,7 +1158,7 @@ export const LOCATIONS = {
         "id": "1stfloorbedroom_1775563115712",
         "name": "Entrance",
         "image": "assets/images/IMG_20260401_211240_00_041_exported.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": -98,
         "hotspots": [
           {
             "id": "hotspot_1775563181568",
@@ -1252,7 +1226,7 @@ export const LOCATIONS = {
         "id": "1stfloorbedroom_1775563130776",
         "name": "Bathroom",
         "image": "assets/images/IMG_20260401_211217_00_040_exported.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": -117,
         "hotspots": [
           {
             "id": "hotspot_1775563230825",
@@ -1280,7 +1254,7 @@ export const LOCATIONS = {
         "id": "1stfloorbedroom_1775563144992",
         "name": "Point B",
         "image": "assets/images/IMG_20260401_211302_00_042_exported.jpg",
-        "rotationOffset": 0,
+        "rotationOffset": -98,
         "hotspots": [
           {
             "id": "hotspot_1775563242593",

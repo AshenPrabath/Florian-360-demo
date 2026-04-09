@@ -1,57 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
+import * as THREE from 'three';
+import { getTourAssets, getEssentialAssets } from '../../utils/assetUtils';
 
-const ASSETS = {
-  images: [
-    '/assets/images/home-bg.png',
-    '/assets/images/building.png',
-    '/assets/images/image-3.png',
-    '/assets/images/image-4.png',
-    '/assets/images/image-5.png',
-    '/assets/images/image-6.png',
-    '/assets/images/Image-exterior.png',
-    '/assets/images/territory.png',
-    '/assets/images/yoga.jpg',
-    '/assets/images/bnw-logo.png',
-    '/assets/images/floorplan.png',
-    '/assets/images/360-bg.png',
-    '/assets/images/Entrance_VRay.jpg',
-    '/assets/images/sofa_new.jpg',
-    '/assets/images/living_door.jpg',
-    '/assets/images/Corrior.jpg',
-    '/assets/images/kitchen_doo-1.jpg',
-    '/assets/images/kitchen_main.jpg',
-    '/assets/images/Bedroom_Entrance.jpg',
-    '/assets/images/Bedroom_Main.jpg',
-    '/assets/images/Bathroom_1.jpg',
-    '/assets/images/Bedroom_Entrance_1.jpg',
-    '/assets/images/Kitchen_Entrance_2.jpg',
-  ],
-  icons: [
-    '/assets/icons/bed-single-02.png',
-    '/assets/icons/left-arrow.png',
-    '/assets/icons/right-arrow.png',
-    '/assets/icons/beach.png',
-    '/assets/icons/tree-02.png',
-    '/assets/icons/yoga-02.png',
-    '/assets/icons/pool.png',
-    '/assets/icons/3d-rotate.png',
-    '/assets/icons/arrow-expand.png',
-    '/assets/icons/arrow-shrink.png',
-  ],
-  videos: [
-    '/assets/movies/movie_taj.mp4',
-    '/assets/movies/home-bg-video.mp4'
-  ],
-  models: [
-    '/assets/models/floorplan_wall.glb',
-    '/assets/models/floorplan_glass.glb',
-  ],
-};
+// Enable Three.js Global Cache
+THREE.Cache.enabled = true;
 
-// Global cache to store preloaded assets
+const TOUR_ASSETS = getTourAssets();
+
+// Global cache to store preloaded assets (Textures, etc.)
 const AssetCache = {
-  images: new Map(),
+  textures: new Map(),
   videos: new Map(),
   models: new Map(),
   
@@ -68,7 +27,7 @@ const AssetCache = {
   },
   
   clear() {
-    this.images.clear();
+    this.textures.clear();
     this.videos.clear();
     this.models.clear();
   }
@@ -79,7 +38,6 @@ window.AssetCache = AssetCache;
 
 const getAssetSize = async (src) => {
   try {
-    // First check if it's cached in service worker
     if ('caches' in window) {
       const cache = await caches.open('tour-assets-v1');
       const cachedResponse = await cache.match(src);
@@ -89,7 +47,6 @@ const getAssetSize = async (src) => {
       }
     }
     
-    // If not cached, try HEAD request first
     const headResponse = await fetch(src, { method: 'HEAD' });
     if (headResponse.ok) {
       const contentLength = headResponse.headers.get('content-length');
@@ -98,7 +55,6 @@ const getAssetSize = async (src) => {
       }
     }
     
-    // If no content-length or it's 0, do a full fetch to get actual size
     const response = await fetch(src);
     if (!response.ok) throw new Error(`Failed to fetch: ${src}`);
     const blob = await response.blob();
@@ -109,58 +65,25 @@ const getAssetSize = async (src) => {
   }
 };
 
-const preloadImageToPersistentCache = (src, onProgress) => new Promise(async (resolve, reject) => {
-  // Check if already cached in our in-memory cache
-  if (AssetCache.has('images', src)) {
+const preloadImageToCache = (src, onProgress) => new Promise(async (resolve, reject) => {
+  if (AssetCache.has('textures', src)) {
     resolve({ src, cached: true, loadTime: 0, success: true, size: 0 });
     return;
   }
 
-  const img = new Image();
   const startTime = Date.now();
+  const loader = new THREE.TextureLoader();
+  const size = await getAssetSize(src);
   
-  // For images, we can't track real progress, so we'll simulate it
-  let progressInterval;
-  let simulatedProgress = 0;
-  
-  const simulateProgress = () => {
-    if (simulatedProgress < 90) {
-      simulatedProgress += Math.random() * 20;
-      if (simulatedProgress > 90) simulatedProgress = 90;
-      onProgress && onProgress(simulatedProgress);
-    }
-  };
-  
-  img.onload = async () => {
-    // Clear simulation and set to 100%
-    clearInterval(progressInterval);
-    onProgress && onProgress(100);
-    
-    // Store in cache
-    AssetCache.set('images', src, img);
-    
-    // Also trigger browser caching by setting src again
-    const cacheImg = new Image();
-    cacheImg.src = src;
-    
-    try {
-      // Check service worker cache first, then network
-      let size = 0;
-      if ('caches' in window) {
-        const cache = await caches.open('tour-assets-v1');
-        const cachedResponse = await cache.match(src);
-        if (cachedResponse) {
-          const blob = await cachedResponse.blob();
-          size = blob.size;
-        }
-      }
+  loader.load(
+    src,
+    (texture) => {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.repeat.x = -1;
+      texture.colorSpace = THREE.SRGBColorSpace;
       
-      // If not in cache or size is 0, fetch from network
-      if (size === 0) {
-        const response = await fetch(src);
-        const blob = await response.blob();
-        size = blob.size;
-      }
+      AssetCache.set('textures', src, texture);
+      onProgress && onProgress(100);
       
       resolve({ 
         src, 
@@ -169,378 +92,181 @@ const preloadImageToPersistentCache = (src, onProgress) => new Promise(async (re
         success: true,
         size: size
       });
-    } catch (error) {
-      console.warn(`Failed to get size for ${src}:`, error);
-      resolve({ 
-        src, 
-        cached: false,
-        loadTime: Date.now() - startTime, 
-        success: true,
-        size: 0
-      });
-    }
-  };
-  
-  img.onerror = () => {
-    clearInterval(progressInterval);
-    reject(new Error(`Failed to load image: ${src}`));
-  };
-  
-  // Start progress simulation
-  progressInterval = setInterval(simulateProgress, 100);
-  img.src = src;
-});
-
-const preloadVideoToPersistentCache = (src, onProgress) => new Promise((resolve, reject) => {
-  // Check if already cached
-  if (AssetCache.has('videos', src)) {
-    resolve({ src, cached: true, loadTime: 0, success: true, size: 0 });
-    return;
-  }
-
-  const video = document.createElement('video');
-  const startTime = Date.now();
-  
-  // Track video loading progress
-  const updateProgress = () => {
-    if (video.buffered.length > 0) {
-      const buffered = video.buffered.end(0);
-      const duration = video.duration;
-      if (duration > 0) {
-        const progress = (buffered / duration) * 100;
-        onProgress && onProgress(progress);
+    },
+    (xhr) => {
+      if (xhr.lengthComputable) {
+        onProgress && onProgress((xhr.loaded / xhr.total) * 100);
       }
-    }
-  };
-  
-  video.addEventListener('progress', updateProgress);
-  video.addEventListener('loadeddata', updateProgress);
-  
-  video.onloadeddata = () => {
-    onProgress && onProgress(100);
-    
-    // Store in cache
-    AssetCache.set('videos', src, video);
-    
-    // Get actual size by fetching the blob
-    fetch(src)
-      .then(res => res.blob())
-      .then(blob => {
-        resolve({ 
-          src, 
-          cached: false,
-          loadTime: Date.now() - startTime, 
-          success: true,
-          size: blob.size
-        });
-      })
-      .catch(() => {
-        resolve({ 
-          src, 
-          cached: false,
-          loadTime: Date.now() - startTime, 
-          success: true,
-          size: 0
-        });
-      });
-  };
-  
-  video.onerror = () => reject(new Error(`Failed to load video: ${src}`));
-  video.src = src;
-  video.preload = 'auto';
-  video.load();
-});
-
-const preloadModelToPersistentCache = (src, onProgress) => new Promise(async (resolve, reject) => {
-  // Check if already cached in our in-memory cache
-  if (AssetCache.has('models', src)) {
-    resolve({ src, cached: true, loadTime: 0, success: true, size: 0 });
-    return;
-  }
-
-  const startTime = Date.now();
-  
-  try {
-    let blob;
-    let size = 0;
-    
-    // Check service worker cache first
-    if ('caches' in window) {
-      const cache = await caches.open('tour-assets-v1');
-      const cachedResponse = await cache.match(src);
-      if (cachedResponse) {
-        blob = await cachedResponse.blob();
-        size = blob.size;
-        onProgress && onProgress(100);
-        console.log(`GLB ${src} loaded from service worker cache, size: ${size} bytes`);
-      }
-    }
-    
-    // If not in cache, fetch from network with progress tracking
-    if (!blob) {
-      const response = await fetch(src);
-      if (!response.ok) throw new Error(`Failed: ${src}`);
-      
-      const contentLength = response.headers.get('content-length');
-      const totalSize = contentLength ? parseInt(contentLength, 10) : 0;
-      
-      if (totalSize > 0) {
-        // Track download progress
-        const reader = response.body.getReader();
-        const chunks = [];
-        let receivedLength = 0;
-        
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          chunks.push(value);
-          receivedLength += value.length;
-          
-          const progress = (receivedLength / totalSize) * 100;
-          onProgress && onProgress(progress);
-        }
-        
-        blob = new Blob(chunks);
-        size = blob.size;
-      } else {
-        blob = await response.blob();
-        size = blob.size;
-        onProgress && onProgress(100);
-      }
-      
-      console.log(`GLB ${src} loaded from network, size: ${size} bytes`);
-    }
-    
-    // Store blob in cache
-    AssetCache.set('models', src, blob);
-    
-    resolve({ 
-      src, 
-      cached: false,
-      loadTime: Date.now() - startTime, 
-      success: true,
-      size: size
-    });
-  } catch (error) {
-    console.error(`Failed to load model ${src}:`, error);
-    reject(error);
-  }
+    },
+    (err) => reject(err)
+  );
 });
 
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 MB';
-  const mb = bytes / (1024 * 1024);
-  return mb.toFixed(1) + ' MB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
 const formatSpeed = (bytesPerSecond) => {
   if (bytesPerSecond === 0) return '0 Mbps';
-  const mbps = (bytesPerSecond * 8) / (1024 * 1024); // Convert to Mbps
-  return mbps.toFixed(1) + ' Mbps';
+  return ((bytesPerSecond * 8) / (1024 * 1024)).toFixed(1) + ' Mbps';
 };
 
 const formatTime = (seconds) => {
-  if (seconds === 0 || !isFinite(seconds)) return '0s';
+  if (!isFinite(seconds) || seconds === 0) return '0s';
   if (seconds < 60) return Math.round(seconds) + 's';
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.round(seconds % 60);
-  return `${minutes}m ${remainingSeconds}s`;
+  return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
 };
 
+const ESSENTIAL_ASSETS = getEssentialAssets();
+
 const AssetPreloader = ({ onComplete, children }) => {
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadedAssets, setLoadedAssets] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentAsset, setCurrentAsset] = useState('');
-  const [currentAssetProgress, setCurrentAssetProgress] = useState(0);
-  const [totalSize, setTotalSize] = useState(0);
-  const [loadedSize, setLoadedSize] = useState(0);
-  const [cachedCount, setCachedCount] = useState(0);
-  const [sizeCalculated, setSizeCalculated] = useState(false);
-  const [internetSpeed, setInternetSpeed] = useState(0);
-  const [estimatedTime, setEstimatedTime] = useState(0);
-  const [mbProgress, setMbProgress] = useState(0);
-  const loadingRef = useRef(false);
-  const speedCalculationRef = useRef({ startTime: 0, startBytes: 0, samples: [] });
+  const [mbProgress, setMbProgress] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [currentAsset, setCurrentAsset] = React.useState('');
+  const [loadedAssets, setLoadedAssets] = React.useState(0);
+  const [totalSize, setTotalSize] = React.useState(0);
+  const [loadedSize, setLoadedSize] = React.useState(0);
+  const [internetSpeed, setInternetSpeed] = React.useState(0);
+  const [estimatedTime, setEstimatedTime] = React.useState(0);
+  const loadingStartedRef = React.useRef(false);
 
-  const totalAssets = ASSETS.images.length + ASSETS.icons.length + ASSETS.videos.length + ASSETS.models.length;
+  const allAssetsList = [
+    ...TOUR_ASSETS.images.map(src => ({ src, loader: preloadImageToCache })),
+    ...TOUR_ASSETS.icons.map(src => ({ src, loader: preloadImageToCache })),
+  ];
 
-  useEffect(() => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
+  const totalAssets = allAssetsList.length;
+
+  React.useEffect(() => {
+    if (loadingStartedRef.current) return;
+    loadingStartedRef.current = true;
 
     const loadAssets = async () => {
-      const allAssets = [
-        ...ASSETS.images.map(src => ({ src, type: 'images', loader: preloadImageToPersistentCache })),
-        ...ASSETS.icons.map(src => ({ src, type: 'images', loader: preloadImageToPersistentCache })),
-        ...ASSETS.videos.map(src => ({ src, type: 'videos', loader: preloadVideoToPersistentCache })),
-        ...ASSETS.models.map(src => ({ src, type: 'models', loader: preloadModelToPersistentCache })),
-      ];
-
-      // First, calculate total size
-      setCurrentAsset('Calculating total size...');
-      setCurrentAssetProgress(0);
-      const sizePromises = allAssets.map(({ src }) => getAssetSize(src));
-      const sizes = await Promise.all(sizePromises);
-      const calculatedTotalSize = sizes.reduce((sum, size) => sum + size, 0);
-      setTotalSize(calculatedTotalSize);
-      setSizeCalculated(true);
-
-      let loaded = 0;
-      let loadedBytes = 0;
-      let cached = 0;
       const startTime = Date.now();
-      speedCalculationRef.current.startTime = startTime;
-      speedCalculationRef.current.startBytes = 0;
+      const essential = allAssetsList.filter(a => ESSENTIAL_ASSETS.includes(a.src));
+      const lazy = allAssetsList.filter(a => !ESSENTIAL_ASSETS.includes(a.src));
 
-      // Process assets sequentially to avoid race conditions
-      for (const { src, type, loader } of allAssets) {
-        try {
-          const assetName = src.split('/').pop() || src;
-          setCurrentAsset(assetName);
-          setCurrentAssetProgress(0);
-          
-          // Progress callback for individual asset
-          const onProgress = (progress) => {
-            setCurrentAssetProgress(progress);
-          };
-          
-          const result = await loader(src, onProgress);
-          
-          if (result.cached) {
-            cached++;
-            setCachedCount(cached);
-            setCurrentAssetProgress(100);
-          } else {
-            loadedBytes += result.size;
-            setLoadedSize(loadedBytes);
-            setCurrentAssetProgress(100);
-            
-            // Calculate progress based on MBs
-            const mbProgressValue = calculatedTotalSize > 0 ? (loadedBytes / calculatedTotalSize) * 100 : 0;
-            setMbProgress(mbProgressValue);
-            
-            // Calculate internet speed
-            const currentTime = Date.now();
-            const elapsedTime = (currentTime - startTime) / 1000; // in seconds
-            
-            if (elapsedTime > 0 && loadedBytes > 0) {
-              const currentSpeed = loadedBytes / elapsedTime; // bytes per second
-              setInternetSpeed(currentSpeed);
+      const sizes = await Promise.all(allAssetsList.map(a => getAssetSize(a.src)));
+      const calculatedTotalSize = sizes.reduce((sum, s) => sum + s, 0);
+      setTotalSize(calculatedTotalSize);
+
+      let currentLoadedBytes = 0;
+      let currentLoadedCount = 0;
+
+      const loadBatch = async (batch) => {
+        const limit = navigator.hardwareConcurrency ? Math.min(navigator.hardwareConcurrency, 6) : 4;
+        const pool = new Set();
+        
+        for (const item of batch) {
+          if (pool.size >= limit) await Promise.race(pool);
+
+          const promise = (async () => {
+            try {
+              setCurrentAsset(item.src.split('/').pop());
+              const result = await item.loader(item.src);
+              currentLoadedBytes += result.size;
+              currentLoadedCount++;
               
-              // Calculate estimated time for remaining data
-              const remainingBytes = calculatedTotalSize - loadedBytes;
-              const estimated = remainingBytes / currentSpeed;
-              setEstimatedTime(estimated);
-            }
-          }
-          
-          loaded++;
-          setLoadedAssets(loaded);
-          setLoadingProgress((loaded / totalAssets) * 100);
-          
-        } catch (err) {
-          console.error(`Failed to load ${src}:`, err);
-          loaded++;
-          setLoadedAssets(loaded);
-          setLoadingProgress((loaded / totalAssets) * 100);
-          setCurrentAssetProgress(100);
-        }
-      }
+              setLoadedSize(currentLoadedBytes);
+              setLoadedAssets(currentLoadedCount);
+              setMbProgress((currentLoadedBytes / calculatedTotalSize) * 100);
 
-      console.log(`Preloading complete. ${cached} assets were already cached.`);
+              const elapsed = (Date.now() - startTime) / 1000;
+              if (elapsed > 0) {
+                const speed = currentLoadedBytes / elapsed;
+                setInternetSpeed(speed);
+                setEstimatedTime((calculatedTotalSize - currentLoadedBytes) / speed);
+              }
+            } catch (err) {
+              console.warn(`Load failed for ${item.src}:`, err);
+            }
+          })();
+
+          pool.add(promise);
+          promise.finally(() => pool.delete(promise));
+        }
+        await Promise.all(pool);
+      };
+
+      await loadBatch(essential);
       setIsLoading(false);
       onComplete && onComplete();
+
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'PRELOAD_ASSETS',
+          payload: allAssetsList.map(a => a.src)
+        });
+      }
+
+      await loadBatch(lazy);
     };
 
     loadAssets();
-  }, [onComplete, totalAssets]);
+  }, [onComplete]);
 
   if (!isLoading) return children;
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center z-50">
-      <div className="text-center space-y-6 max-w-md mx-auto px-6">
-        <div className="flex items-center justify-center gap-8 mb-8">
-          <img src="/assets/images/bnw-logo.png" alt="Company Logo" className="h-16 object-contain" />
-          <img src="/assets/images/web3-white.png" alt="Partner Logo" className="h-16 object-contain" />
+      <div className="text-center space-y-6 max-w-md mx-auto px-6 font-sans">
+        <div className="flex flex-col items-center justify-center gap-2 mb-8 uppercase tracking-[0.4em] text-white">
+          <div className="text-2xl font-bold">Florain</div>
+          <div className="text-2xl font-light text-[#DCC5B7]">Otium</div>
         </div>
 
-        <div className="relative">
-          <div className="w-20 h-20 mx-auto mb-4">
-            <Loader2 className="w-full h-full text-blue-500 animate-spin" />
-          </div>
-          <div className="absolute inset-0 w-20 h-20 mx-auto border-4 border-blue-500/20 rounded-full"></div>
+        <div className="relative w-20 h-20 mx-auto">
+          <Loader2 className="w-full h-full text-blue-500 animate-spin" />
+          <div className="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-white">Loading Web3Interactive - 360 Virtual Tour</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Preparing Your 360 Villa Experience</h2>
           
-          <div className="space-y-3">
-            {/* Internet Speed */}
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-300">Internet Speed</span>
-              <span className="text-blue-400 font-medium">{formatSpeed(internetSpeed)}</span>
+          <div className="grid grid-cols-2 gap-4 text-[10px] uppercase tracking-wider text-white/40">
+            <div className="bg-white/5 p-2 rounded border border-white/5">
+              <div className="mb-1">Speed</div>
+              <div className="text-blue-400 font-mono text-xs">{formatSpeed(internetSpeed)}</div>
             </div>
-            
-            {/* Estimated Time */}
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-300">Estimated Time</span>
-              <span className="text-green-400 font-medium">{formatTime(estimatedTime)}</span>
+            <div className="bg-white/5 p-2 rounded border border-white/5">
+              <div className="mb-1">Time Left</div>
+              <div className="text-green-400 font-mono text-xs">{formatTime(estimatedTime)}</div>
             </div>
           </div>
 
           <div className="space-y-3">
-            <div className="flex justify-between text-sm text-gray-300">
-              <span>Assets loaded</span>
+            <div className="flex justify-between text-[10px] uppercase tracking-widest text-white/60 font-bold">
+              <span>Assets Prepared</span>
               <span>{loadedAssets} / {totalAssets}</span>
             </div>
             
-            {cachedCount > 0 && (
-              <div className="flex justify-between text-sm text-green-400">
-                <span>Already cached</span>
-                <span>{cachedCount}</span>
-              </div>
-            )}
-            
-            {/* Overall Progress Bar */}
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300 ease-out"
+                className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                 style={{ width: `${mbProgress}%` }}
               ></div>
             </div>
-            <div className="text-center text-lg font-semibold text-blue-400">
-              {Math.round(mbProgress)}%
+            
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-white/30 font-mono truncate max-w-[150px]">
+                {currentAsset ? `Current: ${currentAsset}` : 'Initializing...'}
+              </span>
+              <span className="text-lg font-bold text-white/90 font-mono leading-none">
+                {Math.round(mbProgress)}%
+              </span>
             </div>
             
-            {/* Individual Asset Progress */}
-            {currentAsset && (
-              <div className="space-y-2">
-                <div className="text-sm text-gray-400">Loading: {currentAsset}</div>
-                <div className="w-full bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-gradient-to-r from-green-500 to-blue-500 h-1.5 rounded-full transition-all duration-150 ease-out"
-                    style={{ width: `${currentAssetProgress}%` }}
-                  ></div>
-                </div>
-                <div className="text-center text-sm text-green-400">
-                  {Math.round(currentAssetProgress)}%
-                </div>
-              </div>
-            )}
-            
-            {sizeCalculated && totalSize > 0 && (
-              <div className="text-center text-sm text-gray-400">
+            {totalSize > 0 && (
+              <div className="text-[10px] text-white/20 font-mono">
                 {formatBytes(loadedSize)} / {formatBytes(totalSize)}
               </div>
             )}
           </div>
         </div>
 
-        <div className="text-xs text-gray-500 mt-8">
-          Please wait while we prepare your immersive experience...
+        <div className="text-[10px] text-white/10 uppercase tracking-[0.2em] pt-4">
+          Florain Otium Ac 2025
         </div>
       </div>
     </div>

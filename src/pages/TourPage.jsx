@@ -6,18 +6,45 @@ import React, {
   useRef,
   useEffect,
 } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { DeviceOrientationControls, OrbitControls } from "@react-three/drei";
+
 import PanoramaSphere from "../components/tour/PanoramaSphere";
 import CameraController from "../components/tour/CameraController";
 import HierarchicalNavigation from "../components/navigation/HierarchicalNavigation";
 import BreadcrumbNavigation from "../components/navigation/BreadcrumbNavigation";
 import TourControls from "../components/navigation/TourControls";
-import Minimap from "../components/minimap/Minimap";
-import { Navigation, Map, MapPin, Home, Volume2 } from "lucide-react";
+import { Navigation, Map, Home, Volume2, Compass } from "lucide-react";
 import { LOCATIONS } from "../data/locations";
 import { useNavigate } from "react-router-dom";
 import SoundToggleButton from "../components/common/SoundToggleButton";
+
+function ZoomSmoother({ targetFovRef, currentFovRef, controlsRef, setZoomLevel, zoomDebounceRef }) {
+  useFrame(() => {
+    const diff = targetFovRef.current - currentFovRef.current;
+    if (Math.abs(diff) > 0.05) {
+      currentFovRef.current += diff * 0.12; // Lower is smoother/slower momentum
+      
+      if (controlsRef.current && controlsRef.current.object) {
+        controlsRef.current.object.fov = currentFovRef.current;
+        controlsRef.current.object.updateProjectionMatrix();
+      }
+
+      if (zoomDebounceRef.current) clearTimeout(zoomDebounceRef.current);
+      zoomDebounceRef.current = setTimeout(() => {
+        setZoomLevel(currentFovRef.current);
+      }, 50);
+    } else if (Math.abs(diff) > 0 && Math.abs(diff) <= 0.05) {
+      currentFovRef.current = targetFovRef.current;
+      if (controlsRef.current && controlsRef.current.object) {
+        controlsRef.current.object.fov = currentFovRef.current;
+        controlsRef.current.object.updateProjectionMatrix();
+      }
+      setZoomLevel(currentFovRef.current);
+    }
+  });
+  return null;
+}
 
 function TourPage() {
   const [currentLocationId, setCurrentLocationId] = useState("living");
@@ -26,20 +53,16 @@ function TourPage() {
   const [userDirection, setUserDirection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isNavExpanded, setIsNavExpanded] = useState(false);
-  const [isMinimapVisible, setIsMinimapVisible] = useState(false);
   const [isAutoRotating, setIsAutoRotating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isNightMode, setIsNightMode] = useState(false);
+  const [isGyroEnabled, setIsGyroEnabled] = useState(false);
+  const [isGyroSupported, setIsGyroSupported] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(75); // Default FOV
   const [isZooming, setIsZooming] = useState(false);
   const controlsRef = useRef();
   const zoomAnimationRef = useRef(null);
   const navigate = useNavigate();
 
-  const apartmentModelUrls = [
-  "assets/models/floorplan_wall.glb",
-  "assets/models/floorplan_glass.glb"
-];
 
   // Zoom limits
   const MIN_FOV = 30; // Maximum zoom in
@@ -113,74 +136,99 @@ function TourPage() {
     setIsAutoRotating(!isAutoRotating);
   };
 
-  // Easing function for smooth zoom animation
-  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+  // --- Native Zoom Gestures Override ---
+  const initialPinchDistance = useRef(null);
+  const currentFovRef = useRef(zoomLevel);
+  const targetFovRef = useRef(zoomLevel);
+  const zoomDebounceRef = useRef(null);
 
-  // Animated zoom function
-  const animateZoom = (targetFov, duration = 300) => {
-    if (isZooming) return; // Prevent multiple animations
+  // Sync ref with state when mounting or external forces
+  useEffect(() => {
+    currentFovRef.current = zoomLevel;
+    targetFovRef.current = zoomLevel;
+  }, []);
 
-    const startFov = zoomLevel;
-    const startTime = Date.now();
+  const updateCameraFOV = (newFov) => {
+    targetFovRef.current = Math.max(MIN_FOV, Math.min(MAX_FOV, newFov));
+  };
 
-    setIsZooming(true);
+  const zoomIn = () => updateCameraFOV(targetFovRef.current - ZOOM_STEP);
+  const zoomOut = () => updateCameraFOV(targetFovRef.current + ZOOM_STEP);
+  const resetZoom = () => updateCameraFOV(75);
 
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutCubic(progress);
+  const handleWheel = (e) => {
+    // Standardize delta scroll factor
+    const factor = 0.05; 
+    updateCameraFOV(targetFovRef.current + e.deltaY * factor);
+  };
 
-      const currentFov = startFov + (targetFov - startFov) * easedProgress;
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      if (controlsRef.current) controlsRef.current.enableRotate = false; // Lock rotation
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDistance.current = Math.hypot(dx, dy);
+    }
+  };
 
-      setZoomLevel(currentFov);
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && initialPinchDistance.current !== null) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const currentDistance = Math.hypot(dx, dy);
+      
+      const distanceDelta = initialPinchDistance.current - currentDistance;
+      const factor = 0.3; // Responsive pinch factor
+      
+      updateCameraFOV(targetFovRef.current + distanceDelta * factor);
+      initialPinchDistance.current = currentDistance;
+    }
+  };
 
-      if (controlsRef.current && controlsRef.current.object) {
-        controlsRef.current.object.fov = currentFov;
-        controlsRef.current.object.updateProjectionMatrix();
+  const handleTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      if (controlsRef.current) controlsRef.current.enableRotate = true; // Unlock rotation
+      initialPinchDistance.current = null;
+    }
+  };
+  const handleToggleGyro = async () => {
+    if (isGyroEnabled) {
+      setIsGyroEnabled(false);
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      alert(
+        'Gyroscope requires a Secure Context (HTTPS).\n\n' +
+        'If testing locally, please run the server with HTTPS enabled or use a secure tunnel (e.g., ngrok).\n\n' +
+        'Current Origin: ' + window.location.origin
+      );
+      return;
+    }
+
+    if (typeof DeviceOrientationEvent !== 'undefined' && 
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try {
+        const permissionState = await DeviceOrientationEvent.requestPermission();
+        if (permissionState === 'granted') {
+          setIsGyroEnabled(true);
+          setIsAutoRotating(false);
+        } else {
+          alert('Permission to access motion sensors was denied.');
+        }
+      } catch (error) {
+        console.error('Error requesting gyroscope permission:', error);
+        alert('Could not request gyroscope permission. Ensure you are using HTTPS.');
       }
-
-      if (progress < 1) {
-        zoomAnimationRef.current = requestAnimationFrame(animate);
-      } else {
-        setIsZooming(false);
-        setZoomLevel(targetFov); // Ensure exact final value
-      }
-    };
-
-    // Cancel any existing animation
-    if (zoomAnimationRef.current) {
-      cancelAnimationFrame(zoomAnimationRef.current);
-    }
-
-    animate();
-  };
-
-  // Zoom functions with easing
-  const zoomIn = () => {
-    const targetFov = Math.max(MIN_FOV, zoomLevel - ZOOM_STEP);
-    if (targetFov !== zoomLevel) {
-      animateZoom(targetFov);
-    }
-  };
-
-  const zoomOut = () => {
-    const targetFov = Math.min(MAX_FOV, zoomLevel + ZOOM_STEP);
-    if (targetFov !== zoomLevel) {
-      animateZoom(targetFov);
-    }
-  };
-
-  const resetZoom = () => {
-    const defaultFov = 75;
-    if (defaultFov !== zoomLevel) {
-      animateZoom(defaultFov, 500); // Longer animation for reset
+    } else {
+      setIsGyroEnabled(true);
+      setIsAutoRotating(false);
     }
   };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       // Hide minimap and navigation when entering fullscreen
-      setIsMinimapVisible(false);
       setIsNavExpanded(false);
 
       document.documentElement.requestFullscreen().catch((err) => {
@@ -234,81 +282,53 @@ function TourPage() {
         </div>
       )}
 
-      <Canvas
-        camera={{ position: [0, 0, 0.1], fov: zoomLevel }}
-        flat
-        colorSpace="srgb-linear"
+      <div 
+        className="absolute inset-0 touch-none"
+        onWheel={handleWheel}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        <Suspense fallback={null}>
-          <PanoramaSphere
-            viewpoint={currentViewpoint}
-            onNavigate={navigateToViewpoint}
-            isNightMode={isNightMode}
-          />
-          <OrbitControls
-            ref={controlsRef}
-            enablePan={false}
-            enableZoom={true}
-            zoomSpeed={0.5}
-            minDistance={0.1}
-            maxDistance={0.1}
-            rotateSpeed={-0.5}
-            autoRotate={isAutoRotating}
-            autoRotateSpeed={1.0}
-            target={[0, 0, 0]}
-            enableDamping={true}
-            dampingFactor={0.5}
-            onEnd={() => {
-              // Update zoom level when user scrolls to zoom (with easing)
-              if (
-                controlsRef.current &&
-                controlsRef.current.object &&
-                !isZooming
-              ) {
-                const currentFov = controlsRef.current.object.fov;
-                const clampedFov = Math.max(
-                  MIN_FOV,
-                  Math.min(MAX_FOV, currentFov)
-                );
-                if (clampedFov !== currentFov) {
-                  controlsRef.current.object.fov = clampedFov;
-                  controlsRef.current.object.updateProjectionMatrix();
-                }
-                // Smooth update for scroll zoom
-                if (Math.abs(zoomLevel - clampedFov) > 1) {
-                  animateZoom(clampedFov, 200);
-                } else {
-                  setZoomLevel(clampedFov);
-                }
-              }
-            }}
-          />
+        <Canvas
+          camera={{ position: [0, 0, 0.1], fov: 75 }} // Initial FOV only, manually tracked afterwards
+          flat
+          colorSpace="srgb-linear"
+        >
+          <Suspense fallback={null}>
+            <PanoramaSphere
+              viewpoint={currentViewpoint}
+              onNavigate={navigateToViewpoint}
+            />
+            <OrbitControls
+              ref={controlsRef}
+              enablePan={false}
+              enableZoom={false} // Disabled native zoom so custom FOV handlers take over smoothly
+              zoomSpeed={0.5}
+              minDistance={0.1}
+              maxDistance={0.1}
+              rotateSpeed={-0.4}
+              autoRotate={isAutoRotating}
+              autoRotateSpeed={1.0}
+              target={[0, 0, 0]}
+              enableDamping={true}
+              dampingFactor={0.05} // Lower damping factor for buttery smooth rotation momentum
+              enabled={!isGyroEnabled}
+            />
+            <ZoomSmoother 
+              targetFovRef={targetFovRef} 
+              currentFovRef={currentFovRef} 
+              controlsRef={controlsRef} 
+              setZoomLevel={setZoomLevel} 
+              zoomDebounceRef={zoomDebounceRef} 
+            />
           <CameraController onDirectionChange={setUserDirection} />
+          {isGyroEnabled && (
+            <DeviceOrientationControls />
+          )}
         </Suspense>
       </Canvas>
+    </div>
 
-      {/* Minimap - positioned to stack perfectly above the bottom bar */}
-      {isMinimapVisible && (
-        <div
-          className="
-      absolute z-20 
-      bottom-[170px] left-1/2 -translate-x-1/2 
-      md:left-auto md:translate-x-0 
-      md:right-0 md:bottom-[115px] 
-      lg:bottom-[115px] xl:bottom-[140px] 2xl:bottom-[90px] 
-      mx-0 md:mx-16
-    "
-        >
-          <Minimap
-            currentLocation={currentLocationId}
-            currentViewpoint={currentViewpointId}
-            userDirection={userDirection}
-            onLocationClick={navigateToViewpoint}
-            modelUrl={apartmentModelUrls}
-            floorPlanImage="assets/images/floorplan.png"
-          />
-        </div>
-      )}
 
       {/* Hierarchical Navigation - positioned to stack perfectly above the bottom bar */}
       {isNavExpanded && (
@@ -354,21 +374,8 @@ function TourPage() {
             {/* Row 1: Title and Essential Actions */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <h1 className="text-xl sm:text-2xl text-white font-bold">
-                  1BHK
-                </h1>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsMinimapVisible(!isMinimapVisible)}
-                  className={`p-2 rounded-full transition-all duration-300 ${isMinimapVisible
-                    ? "bg-gray-700 text-white shadow-lg"
-                    : "bg-gray-700/50 text-white hover:bg-gray-600"
-                    }`}
-                  title="Toggle Minimap"
-                >
-                  <MapPin size={16} />
-                </button>
                 <button
                   className="w-8 h-8 text-white rounded-full bg-gray-700 hover:bg-gray-600 transition-all duration-300 flex items-center justify-center"
                   onClick={() => navigate("/")}
@@ -415,9 +422,6 @@ function TourPage() {
                     ) <
                     currentLocation.viewpoints.length - 1
                   }
-                  isNightMode={isNightMode}
-                  onToggleNightMode={() => setIsNightMode(!isNightMode)}
-                  hasNight={!!currentViewpoint.nightImage}
                 />
               </div>
             </div>
@@ -439,6 +443,17 @@ function TourPage() {
                       }`}
                   />
                   <span>{isAutoRotating ? "Stop Rotate" : "Rotate"}</span>
+                </button>
+
+                <button
+                  onClick={handleToggleGyro}
+                  className={`flex items-center gap-2 px-3 py-2 text-white rounded-full transition-all text-sm ${isGyroEnabled
+                    ? "bg-purple-600 hover:bg-purple-700 shadow-lg"
+                    : "bg-gray-700 hover:bg-gray-600"
+                    }`}
+                >
+                  <Compass size={16} className={isGyroEnabled ? "animate-pulse" : ""} />
+                  <span>Gyro</span>
                 </button>
 
                 <button
@@ -497,9 +512,6 @@ function TourPage() {
             {/* Row 1: Title and Main Actions */}
             <div className="flex items-center justify-between mx-4 lg:mx-8 px-6 py-2 border-b border-white/10">
               <div className="flex items-center gap-6">
-                <h1 className="text-3xl lg:text-4xl text-white font-bold">
-                  1BHK
-                </h1>
                 <button
                   onClick={() => setIsNavExpanded(!isNavExpanded)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm transition-all duration-300 text-white ${isNavExpanded
@@ -520,16 +532,6 @@ function TourPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsMinimapVisible(!isMinimapVisible)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 backdrop-blur-sm ${isMinimapVisible
-                    ? "bg-gray-700 text-white shadow-lg border-amber-500/40"
-                    : "bg-gray-700/40 text-white hover:bg-gray-600 border-gray-600/50"
-                    }`}
-                >
-                  <MapPin size={18} />
-                  <span className="text-sm font-medium">Minimap</span>
-                </button>
 
                 <button
                   className="w-10 h-10 text-white rounded-full bg-gray-700 hover:bg-gray-600 transition-all duration-300 flex items-center justify-center"
@@ -564,9 +566,6 @@ function TourPage() {
                     ) <
                     currentLocation.viewpoints.length - 1
                   }
-                  isNightMode={isNightMode}
-                  onToggleNightMode={() => setIsNightMode(!isNightMode)}
-                  hasNight={!!currentViewpoint.nightImage}
                 />
               </div>
 
@@ -624,6 +623,18 @@ function TourPage() {
                 </div>
 
                 <button
+                  onClick={handleToggleGyro}
+                  className={`px-4 py-2 text-white rounded-full transition-all text-sm flex items-center gap-2 ${isGyroEnabled
+                    ? "bg-purple-600 hover:bg-purple-700 shadow-lg"
+                    : "bg-gray-700 hover:bg-gray-600"
+                    }`}
+                  title="Gyroscope View"
+                >
+                  Gyro
+                  <Compass size={16} className={isGyroEnabled ? "animate-pulse" : ""} />
+                </button>
+
+                <button
                   onClick={toggleFullscreen}
                   className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all text-sm flex items-center gap-2"
                 >
@@ -643,11 +654,6 @@ function TourPage() {
             {/* Row 1: Title, Navigation and Core Actions */}
             <div className="flex items-center justify-between mx-8 xl:mx-12 px-6 py-3 border-b border-white/10">
               <div className="flex items-center gap-8">
-                <div className="border-r border-gray-700 pr-6">
-                  <h1 className="text-4xl xl:text-5xl text-white font-bold">
-                    1BHK
-                  </h1>
-                </div>
                 <button
                   onClick={() => setIsNavExpanded(!isNavExpanded)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm transition-all duration-300 text-white ${isNavExpanded
@@ -661,16 +667,6 @@ function TourPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <button
-                  onClick={() => setIsMinimapVisible(!isMinimapVisible)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 backdrop-blur-sm ${isMinimapVisible
-                    ? "bg-gray-700 text-white shadow-lg border-amber-500/40"
-                    : "bg-gray-700/40 text-white hover:bg-gray-600 border-gray-600/50"
-                    }`}
-                >
-                  <MapPin size={18} />
-                  <span className="text-sm font-medium">Minimap</span>
-                </button>
 
                 <button
                   className="w-10 h-10 text-white rounded-full bg-gray-700 hover:bg-gray-600 transition-all duration-300 flex items-center justify-center"
@@ -710,9 +706,6 @@ function TourPage() {
                     ) <
                     currentLocation.viewpoints.length - 1
                   }
-                  isNightMode={isNightMode}
-                  onToggleNightMode={() => setIsNightMode(!isNightMode)}
-                  hasNight={!!currentViewpoint.nightImage}
                 />
               </div>
 
@@ -770,6 +763,18 @@ function TourPage() {
                 </div>
 
                 <button
+                  onClick={handleToggleGyro}
+                  className={`px-4 py-2 text-white rounded-full transition-all text-sm flex items-center gap-2 ${isGyroEnabled
+                    ? "bg-purple-600 hover:bg-purple-700 shadow-lg"
+                    : "bg-gray-700 hover:bg-gray-600"
+                    }`}
+                  title="Gyroscope View"
+                >
+                  Gyro
+                  <Compass size={16} className={isGyroEnabled ? "animate-pulse" : ""} />
+                </button>
+
+                <button
                   onClick={toggleFullscreen}
                   className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all text-sm flex items-center gap-2"
                 >
@@ -786,13 +791,6 @@ function TourPage() {
 
           {/* Ultra Large Desktop Single-Row Layout */}
           <div className="hidden 2xl:flex items-center justify-between mx-16 px-6 py-3">
-            {/* Left: Title */}
-            <div className="border-r border-gray-700 pr-6 flex-shrink-0">
-              <h1 className="text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl text-white font-bold">
-                1BHK
-              </h1>
-            </div>
-
             {/* Center: Navigation + Tour Controls */}
             <div className="flex items-center gap-2 lg:gap-4 xl:gap-6 px-6 flex-1 justify-center min-w-0">
               {/* Navigation Toggle */}
@@ -836,9 +834,6 @@ function TourPage() {
                       ) <
                       currentLocation.viewpoints.length - 1
                     }
-                    isNightMode={isNightMode}
-                    onToggleNightMode={() => setIsNightMode(!isNightMode)}
-                    hasNight={!!currentViewpoint.nightImage}
                   />
                 </div>
 
@@ -859,6 +854,19 @@ function TourPage() {
                       className={`w-4 h-4 flex-shrink-0 ${isAutoRotating ? "animate-spin" : ""
                         }`}
                     />
+                  </button>
+
+                  {/* Gyro Button */}
+                  <button
+                    onClick={handleToggleGyro}
+                    className={`px-4 py-2 text-white rounded-full transition-all text-sm flex items-center gap-2 whitespace-nowrap ${isGyroEnabled
+                      ? "bg-purple-600 hover:bg-purple-700 shadow-lg"
+                      : "bg-gray-700 hover:bg-gray-600"
+                      }`}
+                    title="Gyroscope View"
+                  >
+                    Gyro
+                    <Compass size={18} className={`flex-shrink-0 ${isGyroEnabled ? "animate-pulse" : ""}`} />
                   </button>
 
                   {/* Zoom Controls */}
@@ -916,16 +924,6 @@ function TourPage() {
 
             {/* Right: Minimap Toggle */}
             <div className="flex items-center gap-4 pl-6 flex-shrink-0">
-              <button
-                onClick={() => setIsMinimapVisible(!isMinimapVisible)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 backdrop-blur-sm whitespace-nowrap ${isMinimapVisible
-                  ? "bg-gray-700 text-white shadow-lg border-amber-500/40"
-                  : "bg-gray-700/40 text-white hover:bg-gray-600 border-gray-600/50"
-                  }`}
-              >
-                <MapPin size={18} className="flex-shrink-0" />
-                <span className="text-sm font-medium">Minimap</span>
-              </button>
 
               <button
                 className="w-10 h-10 text-white rounded-full bg-gray-700 hover:bg-gray-600 transition-all duration-300 flex items-center justify-center flex-shrink-0"
