@@ -14,6 +14,7 @@ export const LOCATIONS = {
         "id": "living_entrance",
         "name": "Entrance View",
         "description": "View from the entrance of the living room.",
+        "isEntryPoint": true,
         "image": "assets/images/1_Day.jpg",
         "rotationOffset": 100,
         "directionOffset": 90,

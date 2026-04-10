@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "florian-test-4cbc1",
     "public": "build",
     "ignore": [
       "firebase.json",

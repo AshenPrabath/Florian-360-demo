@@ -18,13 +18,14 @@ import { Navigation, Map, Home, Volume2, Compass } from "lucide-react";
 import { LOCATIONS } from "../data/locations";
 import { useNavigate } from "react-router-dom";
 import SoundToggleButton from "../components/common/SoundToggleButton";
+import { usePanoramaCache, getEntryPoint } from "../utils/usePanoramaCache";
 
 function ZoomSmoother({ targetFovRef, currentFovRef, controlsRef, setZoomLevel, zoomDebounceRef }) {
   useFrame(() => {
     const diff = targetFovRef.current - currentFovRef.current;
     if (Math.abs(diff) > 0.05) {
       currentFovRef.current += diff * 0.12; // Lower is smoother/slower momentum
-      
+
       if (controlsRef.current && controlsRef.current.object) {
         controlsRef.current.object.fov = currentFovRef.current;
         controlsRef.current.object.updateProjectionMatrix();
@@ -47,12 +48,18 @@ function ZoomSmoother({ targetFovRef, currentFovRef, controlsRef, setZoomLevel, 
 }
 
 function TourPage() {
-  const [currentLocationId, setCurrentLocationId] = useState("living");
-  const [currentViewpointId, setCurrentViewpointId] =
-    useState("living_entrance");
+  // Derive the starting point from the entry-point flag in locations data
+  const { locationId: entryLocationId, viewpointId: entryViewpointId } = getEntryPoint();
+  const [currentLocationId, setCurrentLocationId] = useState(entryLocationId);
+  const [currentViewpointId, setCurrentViewpointId] = useState(entryViewpointId);
+
+  // Progressive preloading — warm the browser cache wave by wave
+  const { onViewpointChange } = usePanoramaCache();
   const [userDirection, setUserDirection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [oldViewpoint, setOldViewpoint] = useState(null);
+  const [crossfadeOpacity, setCrossfadeOpacity] = useState(1);
   const [isAutoRotating, setIsAutoRotating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isGyroEnabled, setIsGyroEnabled] = useState(false);
@@ -74,7 +81,7 @@ function TourPage() {
     currentLocation.viewpoints.find((v) => v.id === currentViewpointId) ||
     currentLocation.viewpoints[0];
 
-  const navigateToViewpoint = (locationId, viewpointId, skipVideo = false) => {
+  const navigateToViewpoint = useCallback((locationId, viewpointId, skipVideo = false) => {
     if (
       LOCATIONS[locationId] &&
       (locationId !== currentLocationId || viewpointId !== currentViewpointId)
@@ -96,21 +103,56 @@ function TourPage() {
           (v) => v.id === viewpointId
         );
         window.handlePanoramaTransition(
-          { ...newViewpoint, locationId: locationId }, 
+          { ...newViewpoint, locationId: locationId },
           transitionVideo
         );
         return; // Don't update state yet, PanoramaSphere will call us back
       }
 
-      // Fallback: Simple fade transition
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentLocationId(locationId);
-        setCurrentViewpointId(viewpointId);
-        setIsTransitioning(false);
-      }, 300);
+      // Cinematic Crossfade & Zoom Transition
+      const currentFov = targetFovRef.current;
+
+      // Cache the old viewpoint to keep it rendering underneath
+      setOldViewpoint(currentVp);
+      setCrossfadeOpacity(0);
+
+      // Immediately swap location states so the new panorama starts loading
+      setCurrentLocationId(locationId);
+      setCurrentViewpointId(viewpointId);
+      onViewpointChange(locationId, viewpointId);
+
+      // Step 1: Start zooming IN on both panoramas (-20 FOV simulates moving forward)
+      targetFovRef.current = Math.max(MIN_FOV, currentFov - 20);
+
+      // Function to smoothly animate opacity 0 -> 1
+      let start = null;
+      const duration = 600; // 600ms crossfade while zooming IN
+
+      const animateCrossfade = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+
+        // Use easeInOut sine curve for smoother blending
+        const easeProgress = -(Math.cos(Math.PI * progress) - 1) / 2;
+        setCrossfadeOpacity(easeProgress);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateCrossfade);
+        } else {
+          // MIDPOINT: Crossfade complete. The old pano is fully obscured.
+          setOldViewpoint(null);
+
+          // Revert target FOV smoothly to the base normal (75) to prevent
+          // successive clicks from permanently zooming us into MIN_FOV.
+          // Because we don't snap currentFovRef, there's no jarring jump—it
+          // just gracefully "pulls back" slightly after arriving.
+          targetFovRef.current = 75;
+        }
+      };
+
+      requestAnimationFrame(animateCrossfade);
     }
-  };
+  }, [currentLocationId, currentViewpointId, onViewpointChange]);
 
   const nextViewpoint = useCallback(() => {
     const currentIndex = currentLocation.viewpoints.findIndex(
@@ -148,6 +190,12 @@ function TourPage() {
     targetFovRef.current = zoomLevel;
   }, []);
 
+  // Kick off Wave 1 preloading for entry point neighbors on mount
+  useEffect(() => {
+    onViewpointChange(entryLocationId, entryViewpointId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const updateCameraFOV = (newFov) => {
     targetFovRef.current = Math.max(MIN_FOV, Math.min(MAX_FOV, newFov));
   };
@@ -158,7 +206,7 @@ function TourPage() {
 
   const handleWheel = (e) => {
     // Standardize delta scroll factor
-    const factor = 0.05; 
+    const factor = 0.05;
     updateCameraFOV(targetFovRef.current + e.deltaY * factor);
   };
 
@@ -176,10 +224,10 @@ function TourPage() {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const currentDistance = Math.hypot(dx, dy);
-      
+
       const distanceDelta = initialPinchDistance.current - currentDistance;
       const factor = 0.3; // Responsive pinch factor
-      
+
       updateCameraFOV(targetFovRef.current + distanceDelta * factor);
       initialPinchDistance.current = currentDistance;
     }
@@ -206,8 +254,8 @@ function TourPage() {
       return;
     }
 
-    if (typeof DeviceOrientationEvent !== 'undefined' && 
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
       try {
         const permissionState = await DeviceOrientationEvent.requestPermission();
         if (permissionState === 'granted') {
@@ -276,13 +324,7 @@ function TourPage() {
 
   return (
     <div className="w-full h-screen bg-black relative overflow-hidden -mt-20">
-      {isTransitioning && (
-        <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="text-white text-xl font-semibold">Loading...</div>
-        </div>
-      )}
-
-      <div 
+      <div
         className="absolute inset-0 touch-none"
         onWheel={handleWheel}
         onTouchStart={handleTouchStart}
@@ -295,9 +337,23 @@ function TourPage() {
           colorSpace="srgb-linear"
         >
           <Suspense fallback={null}>
+            {/* The OLD viewpoint rendered underneath (solid) */}
+            {oldViewpoint && (
+              <PanoramaSphere
+                viewpoint={oldViewpoint}
+                onNavigate={navigateToViewpoint}
+                opacity={1}
+                zOffset={0} // Farther away (radius 50)
+                interactive={false}
+              />
+            )}
+            {/* The NEW viewpoint rendered on top (fading 0 -> 1) */}
             <PanoramaSphere
               viewpoint={currentViewpoint}
               onNavigate={navigateToViewpoint}
+              opacity={oldViewpoint ? crossfadeOpacity : 1}
+              zOffset={0.5} // Closer to camera (radius 49) so it renders OVER the old one
+              interactive={!oldViewpoint}
             />
             <OrbitControls
               ref={controlsRef}
@@ -314,20 +370,20 @@ function TourPage() {
               dampingFactor={0.05} // Lower damping factor for buttery smooth rotation momentum
               enabled={!isGyroEnabled}
             />
-            <ZoomSmoother 
-              targetFovRef={targetFovRef} 
-              currentFovRef={currentFovRef} 
-              controlsRef={controlsRef} 
-              setZoomLevel={setZoomLevel} 
-              zoomDebounceRef={zoomDebounceRef} 
+            <ZoomSmoother
+              targetFovRef={targetFovRef}
+              currentFovRef={currentFovRef}
+              controlsRef={controlsRef}
+              setZoomLevel={setZoomLevel}
+              zoomDebounceRef={zoomDebounceRef}
             />
-          <CameraController onDirectionChange={setUserDirection} />
-          {isGyroEnabled && (
-            <DeviceOrientationControls />
-          )}
-        </Suspense>
-      </Canvas>
-    </div>
+            <CameraController onDirectionChange={setUserDirection} />
+            {isGyroEnabled && (
+              <DeviceOrientationControls />
+            )}
+          </Suspense>
+        </Canvas>
+      </div>
 
 
       {/* Hierarchical Navigation - positioned to stack perfectly above the bottom bar */}

@@ -1,14 +1,17 @@
 // src/utils/assetUtils.js
+// NOTE: Bulk preloading has been replaced by the graph-aware wave-based
+// system in usePanoramaCache.js. This file is kept for any legacy callers
+// but its functions are no longer called by the tour.
+
 import { LOCATIONS } from '../data/locations';
 
 /**
- * Dynamically discovers all unique asset paths from the LOCATIONS data structure.
- * This ensures that any panorama or icon added via the editor is automatically preloaded.
+ * @deprecated Use usePanoramaCache from usePanoramaCache.js instead.
+ * Returns all unique asset paths from the LOCATIONS data structure.
  */
 export const getTourAssets = () => {
   const images = new Set();
   const icons = new Set([
-     // Static UI icons that might not be in the dynamic location data but are in assets/icons
     '/assets/icons/3d-rotate.png',
     '/assets/icons/arrow-expand.png',
     '/assets/icons/arrow-shrink.png',
@@ -23,20 +26,9 @@ export const getTourAssets = () => {
     '/assets/icons/bed-single-02.png'
   ]);
 
-  // Navigate through LOCATIONS to find ALL images
   Object.values(LOCATIONS).forEach(location => {
-    // Check location-level assets (like if there were any)
-    
-    // Check viewpoint assets
     location.viewpoints?.forEach(viewpoint => {
       if (viewpoint.image) images.add(viewpoint.image.startsWith('/') ? viewpoint.image : `/${viewpoint.image}`);
-      
-      // Check for transition videos if any are defined in hotspots
-      viewpoint.hotspots?.forEach(hotspot => {
-        if (hotspot.transitionVideo) {
-          // Add transition videos to a separate set if needed, or just images
-        }
-      });
     });
   });
 
@@ -47,15 +39,14 @@ export const getTourAssets = () => {
 };
 
 /**
- * Returns a list of "essential" assets needed to render the initial home and first room.
- * @param {string} startLocationId - The ID of the starting location.
+ * @deprecated No longer used — entry point is determined by the isEntryPoint
+ * flag in locations data. See getEntryPoint() in usePanoramaCache.js.
  */
 export const getEssentialAssets = (startLocationId = 'living') => {
   const essential = new Set([
-     '/assets/images/7_Day.jpg', // Home Background - adjust if this is dynamic later
-     '/assets/icons/3d-rotate.png',
-     '/assets/icons/arrow-expand.png',
-     '/assets/icons/music.png'
+    '/assets/icons/3d-rotate.png',
+    '/assets/icons/arrow-expand.png',
+    '/assets/icons/music.png'
   ]);
 
   const startLoc = LOCATIONS[startLocationId];
