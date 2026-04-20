@@ -189,8 +189,8 @@ function PanoramaSphere({ viewpoint, onNavigate, opacity = 1, zOffset = 0, inter
         </mesh>
       )}
 
-      {/* Hotspots */}
-      {!isTransitioning && viewpoint.hotspots.map((hotspot) => (
+      {/* Hotspots - only show if not transitioning and sphere is interactive */}
+      {!isTransitioning && interactive && viewpoint.hotspots.map((hotspot) => (
         <Hotspot
           key={hotspot.id}
           position={hotspot.panoramaPosition}

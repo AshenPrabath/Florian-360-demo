@@ -46,3 +46,8 @@
   }
 }
 
+/* Hide header when the tour page is in fullscreen mode */
+body.tour-fullscreen header {
+  display: none !important;
+}
+
