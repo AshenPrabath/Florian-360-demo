@@ -65,7 +65,7 @@ function TourPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isGyroEnabled, setIsGyroEnabled] = useState(false);
   const [isGyroSupported, setIsGyroSupported] = useState(true);
-  const [zoomLevel, setZoomLevel] = useState(75); // Default FOV
+  const [zoomLevel, setZoomLevel] = useState(100); // Default FOV
   const [isZooming, setIsZooming] = useState(false);
   const controlsRef = useRef();
   const zoomAnimationRef = useRef(null);
@@ -74,7 +74,7 @@ function TourPage() {
 
   // Zoom limits
   const MIN_FOV = 30; // Maximum zoom in
-  const MAX_FOV = 120; // Maximum zoom out
+  const MAX_FOV = 140; // Maximum zoom out
   const ZOOM_STEP = 10; // Zoom increment
 
   const currentLocation = LOCATIONS[currentLocationId];
@@ -143,11 +143,11 @@ function TourPage() {
           // MIDPOINT: Crossfade complete. The old pano is fully obscured.
           setOldViewpoint(null);
 
-          // Revert target FOV smoothly to the base normal (75) to prevent
+          // Revert target FOV smoothly to the base normal (100) to prevent
           // successive clicks from permanently zooming us into MIN_FOV.
           // Because we don't snap currentFovRef, there's no jarring jump—it
           // just gracefully "pulls back" slightly after arriving.
-          targetFovRef.current = 75;
+          targetFovRef.current = 100;
         }
       };
 
@@ -205,7 +205,7 @@ function TourPage() {
     targetFovRef.current = Math.max(MIN_FOV, Math.min(MAX_FOV, newFov));
   };
 
-  
+
 
   const handleWheel = (e) => {
     // Standardize delta scroll factor
@@ -332,7 +332,7 @@ function TourPage() {
     } else {
       document.body.classList.remove('tour-fullscreen');
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.classList.remove('tour-fullscreen');
@@ -349,7 +349,7 @@ function TourPage() {
         onTouchEnd={handleTouchEnd}
       >
         <Canvas
-          camera={{ position: [0, 0, 0.1], fov: 75 }} // Initial FOV only, manually tracked afterwards
+          camera={{ position: [0, 0, 0.1], fov: 100 }} // Initial FOV only, manually tracked afterwards
           flat
           colorSpace="srgb-linear"
         >
@@ -460,14 +460,14 @@ function TourPage() {
             {/* Row 2: Viewpoint Navigation (Full Width) */}
             <div className="flex items-center justify-center px-4 py-2 border-b border-white/10">
               <TourControls
-                  currentViewpointName={currentViewpoint.name}
-                  currentViewpointIndex={currentGlobalIndex}
-                  totalViewpoints={allGlobalViewpoints.length}
-                  onPrev={prevViewpoint}
-                  onNext={nextViewpoint}
-                  hasPrev={currentGlobalIndex > 0}
-                  hasNext={currentGlobalIndex < allGlobalViewpoints.length - 1}
-                />
+                currentViewpointName={currentViewpoint.name}
+                currentViewpointIndex={currentGlobalIndex}
+                totalViewpoints={allGlobalViewpoints.length}
+                onPrev={prevViewpoint}
+                onNext={nextViewpoint}
+                hasPrev={currentGlobalIndex > 0}
+                hasNext={currentGlobalIndex < allGlobalViewpoints.length - 1}
+              />
             </div>
 
             {/* Row 3: Utility Controls */}
@@ -583,7 +583,7 @@ function TourPage() {
                   />
                 </button>
 
-                
+
 
                 <button
                   onClick={handleToggleGyro}
@@ -678,7 +678,7 @@ function TourPage() {
                   />
                 </button>
 
-                
+
 
                 <button
                   onClick={handleToggleGyro}
@@ -734,14 +734,14 @@ function TourPage() {
                 </div>
                 <div className="flex-shrink-0">
                   <TourControls
-                  currentViewpointName={currentViewpoint.name}
-                  currentViewpointIndex={currentGlobalIndex}
-                  totalViewpoints={allGlobalViewpoints.length}
-                  onPrev={prevViewpoint}
-                  onNext={nextViewpoint}
-                  hasPrev={currentGlobalIndex > 0}
-                  hasNext={currentGlobalIndex < allGlobalViewpoints.length - 1}
-                />
+                    currentViewpointName={currentViewpoint.name}
+                    currentViewpointIndex={currentGlobalIndex}
+                    totalViewpoints={allGlobalViewpoints.length}
+                    onPrev={prevViewpoint}
+                    onNext={nextViewpoint}
+                    hasPrev={currentGlobalIndex > 0}
+                    hasNext={currentGlobalIndex < allGlobalViewpoints.length - 1}
+                  />
                 </div>
 
                 {/* Utility Buttons */}
@@ -777,7 +777,7 @@ function TourPage() {
                   </button>
 
                   {/* Zoom Controls */}
-                  
+
 
                   {/* Fullscreen Button */}
                   <button
