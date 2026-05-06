@@ -12,10 +12,10 @@ const CacheTester = () => {
 
   // Test assets from your configuration
   const testAssets = [
-    '/assets/images/home-bg.png',
-    '/assets/images/building.png',
-    '/assets/images/bnw-logo.png',
-    '/assets/icons/bed-single-02.png',
+    '/assets/images/home-bg.webp',
+    '/assets/images/building.webp',
+    '/assets/images/bnw-logo.webp',
+    '/assets/icons/bed-single-02.webp',
     '/assets/movies/movie.mp4',
     '/assets/models/floorplan_wall.glb'
   ];

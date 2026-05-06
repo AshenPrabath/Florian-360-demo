@@ -23,7 +23,7 @@ function EditorSphere({ viewpoint, onAddHotspot, onSelectHotspot, selectedHotspo
   const isPending = viewpoint.image === 'pending_upload' && !imageSource;
 
   // Only load texture if we have a valid source
-  const currentImageTexture = useTexture(isPending ? 'assets/images/placeholder.jpg' : imageSource);
+  const currentImageTexture = useTexture(isPending ? 'assets/images/placeholder.webp' : imageSource);
 
   useEffect(() => {
     if (currentImageTexture) {

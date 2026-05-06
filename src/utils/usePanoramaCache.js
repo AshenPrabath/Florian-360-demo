@@ -87,7 +87,7 @@ export function usePanoramaCache() {
     scheduleIdle(() => {
       toFetch.forEach(({ viewpointId, imagePath }) => {
         const urlHi = toAbsoluteUrl(imagePath);
-        const urlLow = urlHi ? urlHi.replace(/\.jpg$/i, '_low.jpg') : null;
+        const urlLow = urlHi ? urlHi.replace(/\.webp$/i, '_low.webp') : null;
         if (!urlLow) return;
 
         inFlight.current.add(viewpointId);

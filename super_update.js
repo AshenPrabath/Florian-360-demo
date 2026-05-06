@@ -69,7 +69,7 @@ const newMobileRow3 = `{/* Row 3: Utility Controls */}
                     }\`}
                 >
                   <img
-                    src="/assets/icons/3d-rotate.png"
+                    src="/assets/icons/3d-rotate.webp"
                     alt="Rotate Icon"
                     className={\`w-4 h-4 \${isAutoRotating ? "animate-spin" : ""
                       }\`}
@@ -93,7 +93,7 @@ const newMobileRow3 = `{/* Row 3: Utility Controls */}
                   className="flex-1 flex justify-center items-center gap-1.5 px-2 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all text-xs sm:text-sm whitespace-nowrap"
                 >
                   <img
-                    src="/assets/icons/arrow-expand.png"
+                    src="/assets/icons/arrow-expand.webp"
                     alt="Expand Icon"
                     className="w-4 h-4"
                   />

@@ -12,18 +12,18 @@ import { LOCATIONS } from '../data/locations';
 export const getTourAssets = () => {
   const images = new Set();
   const icons = new Set([
-    '/assets/icons/3d-rotate.png',
-    '/assets/icons/arrow-expand.png',
-    '/assets/icons/arrow-shrink.png',
-    '/assets/icons/music.png',
-    '/assets/icons/music-mute.png',
-    '/assets/icons/left-arrow.png',
-    '/assets/icons/right-arrow.png',
-    '/assets/icons/pool.png',
-    '/assets/icons/beach.png',
-    '/assets/icons/tree-02.png',
-    '/assets/icons/yoga-02.png',
-    '/assets/icons/bed-single-02.png'
+    '/assets/icons/3d-rotate.webp',
+    '/assets/icons/arrow-expand.webp',
+    '/assets/icons/arrow-shrink.webp',
+    '/assets/icons/music.webp',
+    '/assets/icons/music-mute.webp',
+    '/assets/icons/left-arrow.webp',
+    '/assets/icons/right-arrow.webp',
+    '/assets/icons/pool.webp',
+    '/assets/icons/beach.webp',
+    '/assets/icons/tree-02.webp',
+    '/assets/icons/yoga-02.webp',
+    '/assets/icons/bed-single-02.webp'
   ]);
 
   Object.values(LOCATIONS).forEach(location => {
@@ -44,9 +44,9 @@ export const getTourAssets = () => {
  */
 export const getEssentialAssets = (startLocationId = 'living') => {
   const essential = new Set([
-    '/assets/icons/3d-rotate.png',
-    '/assets/icons/arrow-expand.png',
-    '/assets/icons/music.png'
+    '/assets/icons/3d-rotate.webp',
+    '/assets/icons/arrow-expand.webp',
+    '/assets/icons/music.webp'
   ]);
 
   const startLoc = LOCATIONS[startLocationId];

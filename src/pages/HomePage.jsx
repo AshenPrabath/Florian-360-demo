@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 function HomePage() {
   const navigate = useNavigate();
-  const villaBg = "/assets/images/7_Day.jpg";
+  const villaBg = "/assets/images/7_Day.webp";
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black select-none -mt-20">

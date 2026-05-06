@@ -18,9 +18,9 @@ const SoundToggleButton = () => {
   // Determine which icon to show
   const getIcon = () => {
     if (!hasUserInteracted) {
-      return "/assets/icons/music.png"; // Show play icon
+      return "/assets/icons/music.webp"; // Show play icon
     }
-    return isMuted ? "/assets/icons/music-mute.png" : "/assets/icons/music.png";
+    return isMuted ? "/assets/icons/music-mute.webp" : "/assets/icons/music.webp";
   };
 
   const getAltText = () => {

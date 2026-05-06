@@ -14,7 +14,7 @@ function PanoramaSphere({ viewpoint, onNavigate, opacity = 1, zOffset = 0, inter
   // 1. Asynchronously load the Low-Quality Image Placeholder (LQIP)
   // We avoid useTexture() here because Suspense would freeze the animation frame loop
   // during crossfades, causing a stutter.
-  const lqipPath = viewpoint.image.replace(/\.jpg$/i, '_low.jpg');
+  const lqipPath = viewpoint.image.replace(/\.webp$/i, '_low.webp');
   const [lowResTexture, setLowResTexture] = useState(null);
 
   useEffect(() => {

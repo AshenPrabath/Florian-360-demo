@@ -35,7 +35,7 @@ function App() {
                 <div className="w-1/3 flex justify-center">
                   <Link to="/" className="flex flex-col items-center">
                     <img 
-                      src="/images/logo.png" 
+                      src="/images/logo.webp" 
                       alt="Florain Otium Logo" 
                       className="h-12 w-auto object-contain"
                     />
