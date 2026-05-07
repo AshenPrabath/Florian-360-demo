@@ -14,7 +14,7 @@ export const LOCATIONS = {
         "id": "living_entrance",
         "name": "Entrance View",
         "description": "View from the entrance of the living room.",
-        "image": "assets/images/1_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/1_Day.webp",
         "rotationOffset": 100,
         "directionOffset": 90,
         "minimap3DPosition": [
@@ -54,7 +54,7 @@ export const LOCATIONS = {
         "name": "Door View",
         "description": "View from the Door area in the living room.",
         "isEntryPoint": true,
-        "image": "assets/images/2_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/2_Day.webp",
         "rotationOffset": 88,
         "directionOffset": 90,
         "minimap3DPosition": [
@@ -126,7 +126,7 @@ export const LOCATIONS = {
       {
         "id": "corridor_1775559095459",
         "name": "Point A",
-        "image": "assets/images/3_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/3_Day.webp",
         "rotationOffset": 82,
         "hotspots": [
           {
@@ -174,7 +174,7 @@ export const LOCATIONS = {
       {
         "id": "corridor_1775559155747",
         "name": "Point B",
-        "image": "assets/images/4_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/4_Day.webp",
         "rotationOffset": 80,
         "hotspots": [
           {
@@ -256,7 +256,7 @@ export const LOCATIONS = {
       {
         "id": "lobby_1775559302454",
         "name": "Lobby A",
-        "image": "assets/images/5_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/5_Day.webp",
         "rotationOffset": 77,
         "hotspots": [
           {
@@ -304,7 +304,7 @@ export const LOCATIONS = {
       {
         "id": "lobby_1775560178725",
         "name": "Lobby B",
-        "image": "assets/images/6_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/6_Day.webp",
         "rotationOffset": 77,
         "hotspots": [
           {
@@ -366,7 +366,7 @@ export const LOCATIONS = {
       {
         "id": "outside_1775560221494",
         "name": "Outside A",
-        "image": "assets/images/7_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/7_Day.webp",
         "rotationOffset": 78,
         "hotspots": [
           {
@@ -414,7 +414,7 @@ export const LOCATIONS = {
       {
         "id": "outside_1775560232646",
         "name": "Outside B",
-        "image": "assets/images/8_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/8_Day.webp",
         "rotationOffset": 78,
         "hotspots": [
           {
@@ -456,7 +456,7 @@ export const LOCATIONS = {
       {
         "id": "stairs_1775560581084",
         "name": "Stairs",
-        "image": "assets/images/9_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/9_Day.webp",
         "rotationOffset": 96,
         "hotspots": [
           {
@@ -518,7 +518,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorcorridor_1775560755655",
         "name": "Point A",
-        "image": "assets/images/11_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/11_Day.webp",
         "rotationOffset": 88,
         "hotspots": [
           {
@@ -606,7 +606,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorcorridor_1775561097413",
         "name": "Point B",
-        "image": "assets/images/12_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/12_Day.webp",
         "rotationOffset": 96,
         "hotspots": [
           {
@@ -694,7 +694,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorcorridor_1775561129126",
         "name": "1st Floor Lobby",
-        "image": "assets/images/14_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/14_Day.webp",
         "rotationOffset": -54,
         "hotspots": [
           {
@@ -802,7 +802,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorcorridor_1775561168030",
         "name": "1st Floor Lobby B",
-        "image": "assets/images/13_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/13_Day.webp",
         "rotationOffset": 61,
         "hotspots": [
           {
@@ -870,7 +870,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorcorridor_1775561193086",
         "name": "Point C",
-        "image": "assets/images/15_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/15_Day.webp",
         "rotationOffset": 49,
         "hotspots": [
           {
@@ -972,7 +972,7 @@ export const LOCATIONS = {
       {
         "id": "2ndfloorroom_1775562011685",
         "name": "Entrance",
-        "image": "assets/images/16_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/16_Day.webp",
         "rotationOffset": 75,
         "hotspots": [
           {
@@ -1040,7 +1040,7 @@ export const LOCATIONS = {
       {
         "id": "2ndfloorroom_1775562114622",
         "name": "living",
-        "image": "assets/images/18_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/18_Day.webp",
         "rotationOffset": 161,
         "hotspots": [
           {
@@ -1088,7 +1088,7 @@ export const LOCATIONS = {
       {
         "id": "2ndfloorroom_1775562153991",
         "name": "Balcony",
-        "image": "assets/images/19_Day.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/19_Day.webp",
         "rotationOffset": 161,
         "hotspots": [
           {
@@ -1116,7 +1116,7 @@ export const LOCATIONS = {
       {
         "id": "2ndfloorroom_1775562183399",
         "name": "Bathroom",
-        "image": "assets/images/17_Day_2.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/17_Day_2.webp",
         "rotationOffset": 0,
         "hotspots": [
           {
@@ -1158,7 +1158,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorbedroom_1775563115712",
         "name": "Entrance",
-        "image": "assets/images/IMG_20260401_211240_00_041_exported.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/IMG_20260401_211240_00_041_exported.webp",
         "rotationOffset": -98,
         "hotspots": [
           {
@@ -1226,7 +1226,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorbedroom_1775563130776",
         "name": "Bathroom",
-        "image": "assets/images/IMG_20260401_211217_00_040_exported.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/IMG_20260401_211217_00_040_exported.webp",
         "rotationOffset": -117,
         "hotspots": [
           {
@@ -1254,7 +1254,7 @@ export const LOCATIONS = {
       {
         "id": "1stfloorbedroom_1775563144992",
         "name": "Point B",
-        "image": "assets/images/IMG_20260401_211302_00_042_exported.webp",
+        "image": process.env.PUBLIC_URL + "/assets/images/IMG_20260401_211302_00_042_exported.webp",
         "rotationOffset": -98,
         "hotspots": [
           {

@@ -481,7 +481,7 @@ function TourPage() {
                     }`}
                 >
                   <img
-                    src="/assets/icons/3d-rotate.webp"
+                    src={process.env.PUBLIC_URL + "/assets/icons/3d-rotate.webp"}
                     alt="Rotate Icon"
                     className={`w-4 h-4 ${isAutoRotating ? "animate-spin" : ""
                       }`}
@@ -505,7 +505,7 @@ function TourPage() {
                   className="flex-1 flex justify-center items-center gap-1.5 px-2 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-full transition-all text-xs sm:text-sm whitespace-nowrap"
                 >
                   <img
-                    src="/assets/icons/arrow-expand.webp"
+                    src={process.env.PUBLIC_URL + "/assets/icons/arrow-expand.webp"}
                     alt="Expand Icon"
                     className="w-4 h-4"
                   />
@@ -576,7 +576,7 @@ function TourPage() {
                 >
                   {isAutoRotating ? "Stop Rotate" : "Rotate"}
                   <img
-                    src="/assets/icons/3d-rotate.webp"
+                    src={process.env.PUBLIC_URL + "/assets/icons/3d-rotate.webp"}
                     alt="Rotate Icon"
                     className={`w-4 h-4 ${isAutoRotating ? "animate-spin" : ""
                       }`}
@@ -603,7 +603,7 @@ function TourPage() {
                 >
                   Fullscreen
                   <img
-                    src="/assets/icons/arrow-expand.webp"
+                    src={process.env.PUBLIC_URL + "/assets/icons/arrow-expand.webp"}
                     alt="Expand Icon"
                     className="w-4 h-4"
                   />
@@ -671,7 +671,7 @@ function TourPage() {
                 >
                   {isAutoRotating ? "Stop Rotate" : "Rotate"}
                   <img
-                    src="/assets/icons/3d-rotate.webp"
+                    src={process.env.PUBLIC_URL + "/assets/icons/3d-rotate.webp"}
                     alt="Rotate Icon"
                     className={`w-4 h-4 ${isAutoRotating ? "animate-spin" : ""
                       }`}
@@ -698,7 +698,7 @@ function TourPage() {
                 >
                   Fullscreen
                   <img
-                    src="/assets/icons/arrow-expand.webp"
+                    src={process.env.PUBLIC_URL + "/assets/icons/arrow-expand.webp"}
                     alt="Expand Icon"
                     className="w-4 h-4"
                   />
@@ -756,7 +756,7 @@ function TourPage() {
                   >
                     {isAutoRotating ? "Stop Rotate" : "Rotate"}
                     <img
-                      src="/assets/icons/3d-rotate.webp"
+                      src={process.env.PUBLIC_URL + "/assets/icons/3d-rotate.webp"}
                       alt="Rotate Icon"
                       className={`w-4 h-4 flex-shrink-0 ${isAutoRotating ? "animate-spin" : ""
                         }`}
@@ -786,7 +786,7 @@ function TourPage() {
                   >
                     Fullscreen
                     <img
-                      src="/assets/icons/arrow-expand.webp"
+                      src={process.env.PUBLIC_URL + "/assets/icons/arrow-expand.webp"}
                       alt="Expand Icon"
                       className="w-4 h-4 flex-shrink-0"
                     />
@@ -822,7 +822,7 @@ function TourPage() {
           >
             Restore screen
             <img
-              src="/assets/icons/arrow-shrink.webp"
+              src={process.env.PUBLIC_URL + "/assets/icons/arrow-shrink.webp"}
               alt="Restore Icon"
               className="w-4 h-4"
             />

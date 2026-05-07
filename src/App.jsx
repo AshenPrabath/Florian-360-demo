@@ -21,7 +21,7 @@ function App() {
 
   return (
     <AudioProvider>
-      <Router>
+      <Router basename={process.env.PUBLIC_URL}>
         <AssetPreloader onComplete={handleAssetsLoaded}>
           <div className="App flex flex-col min-h-screen bg-gray-900">
             {/* Navigation Header */}
@@ -35,7 +35,7 @@ function App() {
                 <div className="w-1/3 flex justify-center">
                   <Link to="/" className="flex flex-col items-center">
                     <img 
-                      src="/images/logo.webp" 
+                      src={process.env.PUBLIC_URL + "/images/logo.webp"} 
                       alt="Florain Otium Logo" 
                       className="h-12 w-auto object-contain"
                     />

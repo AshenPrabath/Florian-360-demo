@@ -1,6 +1,7 @@
 {
   "name": "react-360",
   "version": "0.1.0",
+  "homepage": "/explore360",
   "private": true,
   "dependencies": {
     "@react-three/drei": "^9.122.0",

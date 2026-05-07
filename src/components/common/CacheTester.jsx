@@ -12,12 +12,12 @@ const CacheTester = () => {
 
   // Test assets from your configuration
   const testAssets = [
-    '/assets/images/home-bg.webp',
-    '/assets/images/building.webp',
-    '/assets/images/bnw-logo.webp',
-    '/assets/icons/bed-single-02.webp',
-    '/assets/movies/movie.mp4',
-    '/assets/models/floorplan_wall.glb'
+    process.env.PUBLIC_URL + '/assets/images/home-bg.webp',
+    process.env.PUBLIC_URL + '/assets/images/building.webp',
+    process.env.PUBLIC_URL + '/assets/images/bnw-logo.webp',
+    process.env.PUBLIC_URL + '/assets/icons/bed-single-02.webp',
+    process.env.PUBLIC_URL + '/assets/movies/movie.mp4',
+    process.env.PUBLIC_URL + '/assets/models/floorplan_wall.glb'
   ];
 
   // Check memory cache (your AssetCache)

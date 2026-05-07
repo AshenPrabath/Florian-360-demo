@@ -12,18 +12,18 @@ import { LOCATIONS } from '../data/locations';
 export const getTourAssets = () => {
   const images = new Set();
   const icons = new Set([
-    '/assets/icons/3d-rotate.webp',
-    '/assets/icons/arrow-expand.webp',
-    '/assets/icons/arrow-shrink.webp',
-    '/assets/icons/music.webp',
-    '/assets/icons/music-mute.webp',
-    '/assets/icons/left-arrow.webp',
-    '/assets/icons/right-arrow.webp',
-    '/assets/icons/pool.webp',
-    '/assets/icons/beach.webp',
-    '/assets/icons/tree-02.webp',
-    '/assets/icons/yoga-02.webp',
-    '/assets/icons/bed-single-02.webp'
+    process.env.PUBLIC_URL + '/assets/icons/3d-rotate.webp',
+    process.env.PUBLIC_URL + '/assets/icons/arrow-expand.webp',
+    process.env.PUBLIC_URL + '/assets/icons/arrow-shrink.webp',
+    process.env.PUBLIC_URL + '/assets/icons/music.webp',
+    process.env.PUBLIC_URL + '/assets/icons/music-mute.webp',
+    process.env.PUBLIC_URL + '/assets/icons/left-arrow.webp',
+    process.env.PUBLIC_URL + '/assets/icons/right-arrow.webp',
+    process.env.PUBLIC_URL + '/assets/icons/pool.webp',
+    process.env.PUBLIC_URL + '/assets/icons/beach.webp',
+    process.env.PUBLIC_URL + '/assets/icons/tree-02.webp',
+    process.env.PUBLIC_URL + '/assets/icons/yoga-02.webp',
+    process.env.PUBLIC_URL + '/assets/icons/bed-single-02.webp'
   ]);
 
   Object.values(LOCATIONS).forEach(location => {
@@ -44,9 +44,9 @@ export const getTourAssets = () => {
  */
 export const getEssentialAssets = (startLocationId = 'living') => {
   const essential = new Set([
-    '/assets/icons/3d-rotate.webp',
-    '/assets/icons/arrow-expand.webp',
-    '/assets/icons/music.webp'
+    process.env.PUBLIC_URL + '/assets/icons/3d-rotate.webp',
+    process.env.PUBLIC_URL + '/assets/icons/arrow-expand.webp',
+    process.env.PUBLIC_URL + '/assets/icons/music.webp'
   ]);
 
   const startLoc = LOCATIONS[startLocationId];
